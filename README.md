@@ -5,7 +5,7 @@ Bazalt taşının gündüz ısısı ile toprağın serinliği arasındaki farkta
 | Sürüm | Adres | İçerik |
 |---|---|---|
 | v1 | `/` | Kaydırmalı 3B sensör dünyası |
-| v2 | `/v2/` | Diyarbakır panoraması (üretilmiş katmanlar, 2.5B), kuraklık canlandırması, taşa dalış, enerji simülatörü, uyarı motoru, pilot planı |
+| v2 | `/v2/` | Diyarbakır panoraması (2.5B), kuraklık canlandırması, taşa dalış, enerji simülatörü; Tarım (çiftçi telefonu + toprak dilimi: su, karbon, organik madde, azot), Kuyu, Hevsel, Dicle (kirlilik, temizlik, alg), Fabrika (toksik profil, arke önerisi), Dağkapı (gece merdiven/yol ışıkları, taş sağlık kartı), Atık (akıllı kutu, rota), uyarı motoru, pilot planı |
 
 Canlı: https://emrecanbhr21ecb-crypto.github.io/ta-nab-z/ ve https://emrecanbhr21ecb-crypto.github.io/ta-nab-z/v2/
 

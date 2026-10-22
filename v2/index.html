@@ -217,6 +217,95 @@ details .ans{padding:0 14px 14px 60px;font-size:15px;display:grid;gap:8px}
 footer{position:relative;z-index:2;padding-block:40px 120px;max-width:1280px;margin:0 auto;font-size:13px;color:var(--mute);display:grid;gap:6px}
 footer a{color:var(--bone)}
 
+
+/* ---- Uzun (yapışkan) bölüm ve telefon ---- */
+.scene.tall{display:block;min-height:280vh;padding-block:0}
+.tall .sticky{position:sticky;top:0;height:100vh;display:flex;align-items:center}
+.farmwrap{display:flex;gap:40px;align-items:center}
+.farmer{display:flex;gap:12px;align-items:center}
+.farmer>div{display:grid;gap:1px;font-size:14px}
+.steps{margin:0;padding:0;list-style:none;display:grid;gap:9px;counter-reset:st}
+.steps li{position:relative;padding-left:32px;color:var(--mute);font-size:14.5px;transition:color .3s}
+.steps li::before{content:attr(data-s);position:absolute;left:0;top:1px;width:21px;height:21px;border-radius:50%;border:1px solid var(--line);font:600 11px/19px var(--f-mono);text-align:center;color:var(--mute);transition:all .3s}
+.steps li.on{color:var(--bone)}
+.steps li.on::before{border-color:var(--ember);color:var(--ink);background:var(--ember)}
+.steps li.done::before{border-color:var(--ember);color:var(--ember)}
+.phone{--pw:270px;width:var(--pw);max-width:100%;aspect-ratio:9/19.5;border-radius:calc(var(--pw)*.15);background:#05070a;border:calc(var(--pw)*.032) solid #262a30;box-shadow:0 30px 80px rgba(0,0,0,.55);position:relative;overflow:hidden;flex:none;font-size:calc(var(--pw)*.046);transition:box-shadow .6s;color:var(--bone)}
+.phone.glow{box-shadow:0 30px 80px rgba(0,0,0,.55),0 0 110px rgba(240,160,75,.35)}
+.phone .notch{position:absolute;top:2.2%;left:50%;width:30%;height:3.2%;transform:translateX(-50%);background:#000;border-radius:999px;z-index:5}
+.phone .lock,.phone .app{position:absolute;inset:0;transition:opacity .5s, transform .5s, filter .6s}
+.phone .lock{background:radial-gradient(120% 70% at 30% 85%, #c8763e 0%, #4a2d3a 45%, #121a2e 100%);color:#fff;padding:18% 6% 0;display:grid;align-content:start;justify-items:center;gap:.2em}
+.lk-time{font:600 4.2em/1 var(--f-display);letter-spacing:-.02em}
+.lk-date{font-size:1em;opacity:.85}
+.notif{margin-top:16%;width:100%;background:rgba(28,30,34,.78);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-radius:1.4em;padding:.8em .9em;display:grid;gap:.35em;transform:translateY(-260%);opacity:0;transition:transform .55s cubic-bezier(.2,.9,.3,1.2), opacity .3s}
+.nh{display:flex;align-items:center;gap:.5em;font-size:.82em;color:rgba(255,255,255,.8)}
+.nh b{color:#fff}
+.nh span:last-child{margin-left:auto}
+.nt{font-size:.92em;line-height:1.35}
+.appicon{width:1.6em;height:1.6em;border-radius:.45em;background:radial-gradient(circle at 35% 30%, #f0a04b, #7a3e14);flex:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.15)}
+.phone .app{background:#0f1317;opacity:0;transform:scale(.94);overflow:hidden}
+.app-scroll{padding:16% 6% 8%;display:grid;gap:.7em;transition:transform .8s ease}
+.ah{display:flex;gap:.6em;align-items:center}
+.ah div{display:grid}
+.ah b{font:700 1.15em var(--f-display)}
+.ah span{font-size:.8em;color:var(--mute)}
+.todo{border-radius:1em;padding:.7em .8em;display:grid;gap:.15em;background:#1a2026;border:1px solid var(--line)}
+.todo span{font-size:.74em;color:var(--mute)}
+.todo b{font:700 1.05em var(--f-display)}
+.todo.warn{border-color:rgba(240,160,75,.5)}
+.todo.warn b{color:var(--ember)}
+.todo.ok b{color:var(--dicle)}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:.5em}
+.tile{background:#161b20;border-radius:.8em;padding:.55em .6em;display:grid;gap:.05em;border:1px solid var(--line)}
+.tile span{font-size:.7em;color:var(--mute)}
+.tile b{font:700 1.2em var(--f-mono)}
+.tile i{font-style:normal;font-size:.68em}
+.tile.warn i{color:var(--ember)} .tile.low i{color:var(--soil)} .tile.ok i{color:var(--dicle)}
+.mapcard{background:#161b20;border-radius:1em;padding:.6em;display:grid;gap:.4em;border:1px solid var(--line)}
+.mapcard>span{font-size:.74em;color:var(--mute)}
+.mgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:2px;border-radius:.4em;overflow:hidden}
+.mgrid i{aspect-ratio:1;display:block}
+.legend{display:flex;justify-content:space-between;font-size:.66em;color:var(--mute);background:linear-gradient(90deg,#e86a48,#f0a04b,#5fbfd0) bottom/100% 3px no-repeat;padding-bottom:5px}
+.phone[data-step="0"] .lock{filter:brightness(.05)}
+.phone[data-step="1"] .notif,.phone[data-step="2"] .notif,.phone[data-step="3"] .notif{transform:none;opacity:1}
+.phone[data-step="2"] .lock,.phone[data-step="3"] .lock{opacity:0;transform:scale(1.04)}
+.phone[data-step="2"] .app,.phone[data-step="3"] .app{opacity:1;transform:none}
+.phone[data-step="3"] .app-scroll{transform:translateY(-25%)}
+.shots{display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start}
+.shots figure{margin:0;display:grid;gap:8px;justify-items:center}
+.shots figcaption{font-size:12px;color:var(--mute);font-family:var(--f-mono)}
+.shots .phone{--pw:170px;box-shadow:0 20px 50px rgba(0,0,0,.5)}
+.shots .phone *{transition:none!important}
+
+/* ---- Ölçüm ekranları ---- */
+.mrow{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.mrow .big{font:800 clamp(44px,6vw,64px)/1 var(--f-display);letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.mrow .big small{font-size:.32em;font-weight:600;color:var(--mute);letter-spacing:0}
+.kind{font-family:var(--f-mono);font-size:11px;padding:4px 8px;border-radius:3px;border:1px dashed var(--line);color:var(--mute)}
+.kind.direct{border-style:solid;border-color:rgba(95,191,208,.45);color:var(--dicle)}
+.depths,.tox{display:grid;gap:8px}
+.depths>div{display:grid;grid-template-columns:52px 1fr 44px;gap:10px;align-items:center}
+.tox>div{display:grid;grid-template-columns:82px 1fr 128px;gap:10px;align-items:center}
+.depths span,.tox span{font-family:var(--f-mono);font-size:12px;color:var(--mute)}
+.depths b,.tox b{font-family:var(--f-mono);font-weight:600;font-size:12.5px}
+.bar{height:8px;border-radius:4px;background:rgba(236,230,218,.08);overflow:hidden}
+.bar i{display:block;height:100%;width:calc(var(--v) * 100%);background:var(--c, var(--dicle));border-radius:4px}
+.how{display:grid;grid-template-columns:auto 1fr;gap:8px 14px;margin:0;font-size:14.5px}
+.how dt{font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ember);padding-top:3px}
+.how dd{margin:0}
+.kv2{display:grid;grid-template-columns:1fr auto;gap:5px 14px;font-size:14px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding-block:8px}
+.kv2 span{color:var(--mute)}
+.kv2 b{font-family:var(--f-mono);font-weight:600;font-size:13px;text-align:right}
+.scale5{display:grid;grid-template-columns:repeat(5,1fr);gap:3px;font-family:var(--f-mono);font-size:10.5px;text-align:center;color:var(--mute)}
+.scale5 span{padding:6px 2px;background:rgba(236,230,218,.06);border-radius:3px;line-height:1.3}
+.scale5 .on{background:var(--ember);color:var(--ink);font-weight:600}
+.flow{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px;font-family:var(--f-mono);font-size:12px}
+.flow li{padding:5px 9px;border:1px solid var(--line);border-radius:3px}
+.card{border:1px solid var(--line);border-radius:4px;padding:12px 14px;display:grid;gap:10px;background:rgba(15,18,21,.55)}
+.card .ch{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.score{font:800 34px/1 var(--f-display);color:var(--crit)}
+.score small{font-size:.45em;color:var(--mute)}
+
 @media (max-width:860px){
   .scene{align-items:flex-end;padding-block:52vh 8vh;min-height:110vh}
   .intro .cap{padding-block:40vh 8vh}
@@ -227,6 +316,16 @@ footer a{color:var(--bone)}
   .budget{grid-template-columns:1fr 1fr}
   .panel{padding:20px}
   details .ans{padding-left:14px}
+  .scene.tall{min-height:260vh;padding-block:0}
+  .tall .sticky{align-items:flex-start;padding-top:max(12px, env(safe-area-inset-top, 0px))}
+  .farmwrap{flex-direction:column;gap:12px;align-items:stretch}
+  .farmwrap .panel{padding:14px;gap:8px}
+  .farmwrap h2{font-size:24px}
+  .farmwrap .farmer,.farmwrap .note{display:none}
+  .steps li:not(.on){display:none}
+  #phone{--pw:min(190px,46vw);align-self:center}
+  .how{grid-template-columns:1fr}
+  .tox>div{grid-template-columns:70px 1fr 104px}
 }
 @media (max-width:460px){
   .heads,.steps3{grid-template-columns:1fr}
@@ -258,7 +357,7 @@ footer a{color:var(--bone)}
 <div class="mainwrap">
   <!-- ============ GİRİŞ: Diyarbakır panoraması ============ -->
   <div class="intro" id="intro">
-    <section class="cap" id="giris" data-name="Giriş">
+    <section class="cap" id="giris" data-chapter="Giriş">
       <div class="capbox">
         <div class="eyebrow">Tech4Climate Ideathon · Diyarbakır · 2026</div>
         <h1>Taş<em>Nabız</em></h1>
@@ -267,7 +366,7 @@ footer a{color:var(--bone)}
         <div class="scrollhint"><i></i>Kaydır</div>
       </div>
     </section>
-    <section class="cap" id="kuraklik" data-name="Kuraklık">
+    <section class="cap" id="kuraklik" data-chapter="Sorun">
       <div class="capbox">
         <div class="eyebrow">Sorun</div>
         <h2>Kuraklık sessiz ilerler.</h2>
@@ -279,7 +378,7 @@ footer a{color:var(--bone)}
         <span class="repr">Temsili canlandırma · sahne kodla üretildi, gerçek veri değildir</span>
       </div>
     </section>
-    <section class="cap" id="sorun" data-name="Sorun">
+    <section class="cap" id="sorun">
       <div class="capbox">
         <div class="eyebrow">Asıl eksik</div>
         <h2>Su azalıyor. Onu ölçen yok.</h2>
@@ -292,7 +391,7 @@ footer a{color:var(--bone)}
         <p class="formula"><b class="x">Kuraklık ve su kıtlığı</b> içinde, <b class="y">sahadan sürekli veri alınamaması</b> sorununu, <b class="z">enerjisini taştan alan sensörlerle</b>, su krize dönüşmeden önce çözüyoruz.</p>
       </div>
     </section>
-    <section class="cap" id="dalis" data-name="Taş">
+    <section class="cap" id="dalis">
       <div class="capbox">
         <h2>Sahada elektrik yok.<br><em>Ama taş var.</em></h2>
         <p>Bu topraklar volkanik bazaltla kaplı. Her taş, gün boyu güneşi depolayan küçük bir ısı bataryası.</p>
@@ -303,7 +402,7 @@ footer a{color:var(--bone)}
 
 </div>
 <!-- ============ Sahadan: gerçek fotoğraflar (assets/foto/manifest.json doluysa görünür) ============ -->
-<section class="strip-sec" id="sahadan" data-name="Sahadan" hidden>
+<section class="strip-sec" id="sahadan" data-chapter="Sahadan" hidden>
   <div class="inner">
     <div class="eyebrow water">Sahadan · gerçek kareler</div>
     <h2>Bu sahneler temsili değil.</h2>
@@ -312,7 +411,7 @@ footer a{color:var(--bone)}
 </section>
 <main>
   <!-- ============ SENSÖR DÜNYASI ============ -->
-  <section class="scene" data-cam="tas" data-name="Bazalt" id="tas">
+  <section class="scene" data-cam="tas" data-chapter="Fikir" id="tas">
     <div class="panel">
       <div class="eyebrow">01 · Fikir</div>
       <h2>Taşın içindeki güneş.</h2>
@@ -321,7 +420,7 @@ footer a{color:var(--bone)}
     </div>
   </section>
 
-  <section class="scene" data-cam="enerji" data-name="Enerji" id="enerji">
+  <section class="scene" data-cam="enerji" data-chapter="Enerji" id="enerji">
     <div class="panel wide">
       <div class="eyebrow">02 · Enerji · kendin dene</div>
       <h2>Taş ısınır, toprak serin kalır. Arada elektrik doğar.</h2>
@@ -357,7 +456,7 @@ footer a{color:var(--bone)}
     </div>
   </section>
 
-  <section class="scene" data-cam="uyku" data-name="Uyku döngüsü" id="uyku">
+  <section class="scene" data-cam="uyku" id="uyku">
     <div class="panel">
       <div class="eyebrow">03 · Az enerjiyle nasıl yetiyor</div>
       <h2>%99 uyku, %1 uyanıklık.</h2>
@@ -375,7 +474,7 @@ footer a{color:var(--bone)}
     </div>
   </section>
 
-  <section class="scene" data-cam="moduler" data-name="Modüler kafa" id="moduler">
+  <section class="scene" data-cam="moduler" id="moduler">
     <div class="panel">
       <div class="eyebrow">04 · Tek taban, takılabilir kafa</div>
       <h2>Aynı taban. Sahaya göre başka bir kafa.</h2>
@@ -393,20 +492,134 @@ footer a{color:var(--bone)}
     </div>
   </section>
 
-  <section class="scene" data-cam="tarla" data-name="Tarla" id="tarla">
-    <div class="panel">
-      <div class="eyebrow">05 · Tarlada</div>
-      <h2>Bugün sula. Yarın sulama.</h2>
-      <p>Tarladaki taşlar toprak nemini ölçer. Sistem bunu 48 saatlik hava tahminiyle birleştirir ve parselin nem haritasını çıkarır. Karar çiftçiye <strong>SMS</strong> ile gider; akıllı telefon gerekmez.</p>
-      <div class="sms warn">
-        <div class="from"><span>TaşNabız · Parsel 12</span><span>18:40</span></div>
-        <div>Toprak nemi %18, kuzey köşe kuru. 48 saat yağış yok. Bu akşam sula, 30 dakika yeterli.</div>
+  <!-- ============ TARIM ============ -->
+  <section class="scene tall" data-cam="tarla" data-chapter="Tarım" id="tarim">
+    <div class="sticky">
+      <div class="farmwrap">
+        <div class="panel">
+          <div class="eyebrow">05 · Tarım · 1/6 · Bildirim</div>
+          <h2>Akşam 21:42. Mehmet Amca'nın telefonu yanıyor.</h2>
+          <div class="farmer">
+            <svg viewBox="0 0 64 64" width="56" height="56" aria-hidden="true">
+              <circle cx="32" cy="32" r="32" fill="#2a3b2a"/>
+              <path d="M12 64c2-12 10-18 20-18s18 6 20 18z" fill="#6b4a32"/>
+              <circle cx="32" cy="30" r="12" fill="#c98a5a"/>
+              <path d="M18 24c2-9 26-9 28 0l3 1-34 0z" fill="#3a3330"/>
+              <rect x="17" y="22" width="30" height="4" rx="2" fill="#2b2522"/>
+              <path d="M25 35c4 3 10 3 14 0" stroke="#5a3a28" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+              <circle cx="27.5" cy="29.5" r="1.4" fill="#2b2522"/><circle cx="36.5" cy="29.5" r="1.4" fill="#2b2522"/>
+            </svg>
+            <div><strong>Mehmet Aydın, 54</strong><span class="mute">Bismil · 40 dekar pamuk</span><span class="note">Örnek kullanıcı (kurgusal)</span></div>
+          </div>
+          <ol class="steps" id="farmSteps">
+            <li data-s="1">Tarladaki taşlar gün boyu ölçtü ve verisini ağ geçidine yolladı.</li>
+            <li data-s="2">Kök bölgesindeki nem eşiğin altına düştü, 48 saat yağış yok. Bildirim gidiyor.</li>
+            <li data-s="3">Mehmet Amca bildirime dokunuyor. Parselin özeti açılıyor.</li>
+            <li data-s="4">Nem haritası kuzey köşenin kuruduğunu gösteriyor. Bütün tarlayı değil, yalnız orayı sulayacak.</li>
+          </ol>
+          <p class="note">Akıllı telefonu olmayan çiftçiye aynı karar SMS ile gider.</p>
+        </div>
+        <div class="phone" id="phone" data-step="0" role="img" aria-label="Çiftçinin telefonu: kilit ekranında TaşNabız bildirimi, ardından parsel özeti ve nem haritası">
+          <div class="notch"></div>
+          <div class="lock">
+            <div class="lk-time">21:42</div>
+            <div class="lk-date">Perşembe, 22 Ekim</div>
+            <div class="notif">
+              <div class="nh"><span class="appicon"></span><b>TaşNabız</b><span>şimdi</span></div>
+              <div class="nt">Parsel 12: kök bölgesinde nem %22. 48 saat yağış yok. Bu akşam kuzey köşeyi 30 dk sula.</div>
+            </div>
+          </div>
+          <div class="app">
+            <div class="app-scroll">
+              <div class="ah"><span class="appicon"></span><div><b>Parsel 12</b><span>Bismil · pamuk · 40 da</span></div></div>
+              <div class="todo warn"><span>Bugünün kararı</span><b>Bu akşam sula · 30 dk</b><span>Yalnız kuzey köşe (8 da)</span></div>
+              <div class="tiles">
+                <div class="tile warn"><span>Nem</span><b>%22</b><i>sınırda</i></div>
+                <div class="tile low"><span>Org. karbon</span><b>%0,9</b><i>düşük</i></div>
+                <div class="tile low"><span>Org. madde</span><b>%1,5</b><i>az</i></div>
+                <div class="tile ok"><span>Azot</span><b>12</b><i>mg/kg · yeterli</i></div>
+              </div>
+              <div class="mapcard"><span>Nem haritası · Parsel 12</span><div class="mgrid"></div><div class="legend"><span>kuru</span><span>ıslak</span></div></div>
+              <div class="todo ok"><span>Bu hafta</span><b>18 m³ su tasarrufu</b><span>örnek değer</span></div>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="chips"><span class="chip ok">TN-02 nem %31</span><span class="chip ok">TN-03 nem %29</span><span class="chip warn">TN-01 nem %18</span></div>
     </div>
   </section>
 
-  <section class="scene" data-cam="kuyu" data-name="Kuyu" id="kuyu">
+  <section class="scene" data-cam="tarla-su" id="tarla-su">
+    <div class="panel metric">
+      <div class="eyebrow water">Tarım · 2/6 · Tarlanın içinde</div>
+      <h2>Su: kök bölgesi ne içiyor?</h2>
+      <div class="mrow"><span class="big">%22</span><span class="chip warn">solma noktasına yakın</span><span class="kind direct">Doğrudan ölçüm</span></div>
+      <div class="depths">
+        <div><span>10 cm</span><div class="bar"><i style="--v:.40"></i></div><b>%14</b></div>
+        <div><span>30 cm</span><div class="bar"><i style="--v:.63"></i></div><b>%22</b></div>
+        <div><span>60 cm</span><div class="bar"><i style="--v:.77"></i></div><b>%27</b></div>
+      </div>
+      <dl class="how">
+        <dt>Nasıl ölçülür</dt><dd>Taşın altından toprağa inen çubukta üç kapasitif nem halkası var: 10, 30 ve 60 cm.</dd>
+        <dt>Ne yaptırır</dt><dd>Su yüzeyde değil kök bölgesinde azalıyorsa sulama zamanı gelmiştir. Alt katman hâlâ nemliyse kısa bir sulama yeter.</dd>
+        <dt>İklim bağı</dt><dd>Salma sulamada suyun önemli bir kısmı köke ulaşmadan buharlaşır ya da derine kaçar. Doğru zaman ve doğru süre, kuraklıkta en ucuz su kaynağıdır.</dd>
+      </dl>
+    </div>
+  </section>
+
+  <section class="scene" data-cam="tarla-karbon" id="tarla-karbon">
+    <div class="panel metric">
+      <div class="eyebrow">Tarım · 3/6 · Tarlanın içinde</div>
+      <h2>Karbon: toprak nefes alıyor mu?</h2>
+      <div class="mrow"><span class="big">%0,9</span><span class="chip warn">organik karbon düşük</span><span class="kind model">Model + yılda 1 laboratuvar</span></div>
+      <div class="kv2"><span>Toprak solunumu</span><b>2,1 g CO₂ / m² / gün</b><span>Toprak sıcaklığı (30 cm)</span><b>17,4 °C</b></div>
+      <dl class="how">
+        <dt>Nasıl ölçülür</dt><dd>Taşın altındaki küçük hava boşluğunda bir CO₂ sensörü toprağın solunumunu ölçer. Sıcaklık ve nemle birlikte bu, topraktaki canlılığı gösterir. Organik karbon miktarı bu veriden modellenir ve yılda bir laboratuvar analiziyle düzeltilir.</dd>
+        <dt>Ne yaptırır</dt><dd>Anızı yakma, toprağa karıştır. Kışın tarlayı çıplak bırakma, örtü bitkisi ek. Sensör bu uygulamaların karbonu artırıp artırmadığını sezon sezon gösterir.</dd>
+        <dt>İklim bağı</dt><dd>Topraktaki karbon, atmosferdekinin iki katından fazladır. Karbonu artan tarla hem iklime hem verime yarar.</dd>
+      </dl>
+    </div>
+  </section>
+
+  <section class="scene" data-cam="tarla-organik" id="tarla-organik">
+    <div class="panel metric">
+      <div class="eyebrow">Tarım · 4/6 · Tarlanın içinde</div>
+      <h2>Organik madde: toprağın süngeri.</h2>
+      <div class="mrow"><span class="big">%1,5</span><span class="chip warn">az</span><span class="kind model">Model + laboratuvar</span></div>
+      <div class="scale5" aria-label="Organik madde sınıfları: çok az, az, orta, iyi, yüksek; değer az sınıfında">
+        <span>çok az<br>&lt;%1</span><span class="on">az<br>%1–2</span><span>orta<br>%2–3</span><span>iyi<br>%3–4</span><span>yüksek<br>&gt;%4</span>
+      </div>
+      <dl class="how">
+        <dt>Nasıl hesaplanır</dt><dd>Organik madde ≈ organik karbon × 1,72. Sensörün karbon modeli ve dönemsel laboratuvar sonucu birlikte kullanılır.</dd>
+        <dt>Ne yaptırır</dt><dd>Kompost ve yeşil gübre önerir. Şehirde ayrı toplanan organik atık kompost olur ve tarlaya döner (bkz. Atık bölümü).</dd>
+        <dt>İklim bağı</dt><dd>Organik maddesi artan toprak daha çok su tutar. Kuraklığa karşı tarlanın kendi tamponu olur.</dd>
+      </dl>
+    </div>
+  </section>
+
+  <section class="scene" data-cam="tarla-azot" id="tarla-azot">
+    <div class="panel metric">
+      <div class="eyebrow">Tarım · 5/6 · Tarlanın içinde</div>
+      <h2>Azot: fazlası da zarar.</h2>
+      <div class="mrow"><span class="big">12<small> mg/kg</small></span><span class="chip ok">nitrat yeterli</span><span class="kind model">Tahmin + sezon başı test</span></div>
+      <dl class="how">
+        <dt>Nasıl ölçülür</dt><dd>Toprağın elektriksel iletkenliği ve nemdeki değişimden nitrat eğilimi izlenir. Sezon başında şerit test ya da laboratuvar ile kalibre edilir.</dd>
+        <dt>Ne yaptırır</dt><dd>Bu hafta gübre gerekmiyor. Gübreyi tek seferde değil, bitkinin ihtiyacına göre bölerek ver.</dd>
+        <dt>İklim bağı</dt><dd>Fazla azotlu gübre topraktan diazot monoksit (N₂O) olarak havaya karışır. N₂O, CO₂'den yaklaşık 273 kat güçlü bir sera gazıdır. Fazlası yağmurla Dicle'ye taşınır ve alg patlamasını besler (bkz. Dicle).</dd>
+      </dl>
+    </div>
+  </section>
+
+  <section class="scene" data-cam="tarla-cikis" id="tarla-cikis">
+    <div class="panel wide">
+      <div class="eyebrow">Tarım · 6/6 · Tarladan çıkış</div>
+      <h2>Dört ölçüm, tek karar, bir telefon.</h2>
+      <div class="shots" id="phoneShots"></div>
+      <div class="chips"><span class="chip ok">Su: yalnız kuru köşe sulanır</span><span class="chip warn">Karbon: anız yakılmaz</span><span class="chip warn">Organik madde: kompost</span><span class="chip ok">Azot: bu hafta gübre yok</span></div>
+      <p class="note">Uygulama ekranları tasarım maketidir; değerler örnektir.</p>
+    </div>
+  </section>
+
+  <section class="scene" data-cam="kuyu" data-chapter="Kuyu" id="kuyu">
     <div class="panel">
       <div class="eyebrow water">06 · Kuyuda</div>
       <h2>Kuyunun dibini görmeden çekme.</h2>
@@ -431,27 +644,168 @@ footer a{color:var(--bone)}
     </div>
   </section>
 
-  <section class="scene" data-cam="dicle" data-name="Dicle" id="dicle">
+  <!-- ============ HEVSEL ============ -->
+  <section class="scene" data-cam="hevsel" data-chapter="Hevsel" id="hevsel">
     <div class="panel">
-      <div class="eyebrow water">07 · Dicle kıyısında</div>
-      <h2>Kirliliği şikâyetten önce yakala.</h2>
-      <p>Kıyıdaki bazalt taşları zaten oradadır. Su kafası iletkenlik ve bulanıklığı ölçer. Ani bir sıçramada sistem bunun yağmurdan mı, bir deşarjdan mı geldiğini hava verisiyle ayırır ve tekrar eden noktaları önceliklendirir.</p>
-      <div class="chips"><span class="chip warn">TN-05 olası deşarj</span><span class="chip">tekrar: 3 / ay</span><span class="chip ok">TN-06 normal</span></div>
-      <p class="mute">Aynı kafa Hevsel Bahçeleri'nin kenarında, atık biriken noktalarda toprak kirliliğini izler.</p>
-    </div>
-  </section>
-
-  <section class="scene" data-cam="sur" data-name="Surlar" id="sur">
-    <div class="panel">
-      <div class="eyebrow">08 · Surlarda</div>
-      <h2>Surlar da konuşur.</h2>
-      <p>İklim değişikliği surlarda daha sık donma-çözülme ve daha fazla nem demek. Miras kafası bazalt bloğun nemini ve çatlak genişliğini izler. Taş kendi enerjisini ürettiği için yapıya kablo çekilmez, delik açılmaz.</p>
-      <div class="chips"><span class="chip warn">TN-09 çatlak +0,4 mm / 30 gün</span><span class="chip">nem %78</span><span class="chip">donma-çözülme: 11</span></div>
+      <div class="eyebrow">07 · Hevsel Bahçeleri</div>
+      <h2>Binlerce yıllık bahçenin bekçisi.</h2>
+      <p>Hevsel, surlarla Dicle arasında kentin yeşil akciğeri ve gıda bahçesi. Aynı taban burada üç iş yapar:</p>
+      <div class="heads">
+        <div class="head"><span class="k w">Sulama arkı</span><h3>Ark suyu + toprak nemi</h3><p>Hangi bahçeye ne zaman su verileceği sıraya girer; ark boşa akmaz.</p></div>
+        <div class="head"><span class="k s">Yangın riski</span><h3>Sıcaklık + nem + kuru ot</h3><p>Yaz akşamları kuru otta yangın riski yükselince bekçiye ve itfaiyeye haber.</p></div>
+        <div class="head"><span class="k t">Atık noktaları</span><h3>Birikim + sızıntı</h3><p>Bahçe kenarına dökülen atık ve sızıntı (iletkenlik artışı) konumuyla temizlik ekibine gider.</p></div>
+        <div class="head"><span class="k u">Döngü</span><h3>Bahçe atığı → kompost</h3><p>Budama ve yaprak atığı kompostlanır, organik madde olarak toprağa döner.</p></div>
+      </div>
+      <div class="chips"><span class="chip warn">H-03 yangın riski yüksek · 36 °C, nem %14</span><span class="chip ok">Ark-2 su var</span></div>
       <p class="note">Örnek değerler</p>
     </div>
   </section>
 
-  <section class="scene" data-cam="veri" data-name="Uyarı motoru" id="veri">
+  <!-- ============ DİCLE ============ -->
+  <section class="scene" data-cam="dicle" data-chapter="Dicle" id="dicle">
+    <div class="panel">
+      <div class="eyebrow water">08 · Dicle · 1/3 · Su kirliliği</div>
+      <h2>Kirliliği şikâyetten önce yakala.</h2>
+      <p>Kıyıdaki bazalt taşları zaten oradadır. Su kafası iletkenlik, bulanıklık, pH ve sıcaklığı ölçer. Ani bir sıçramada sistem bunun yağmurdan mı, bir deşarjdan mı geldiğini hava verisiyle ayırır ve tekrar eden noktaları önceliklendirir.</p>
+      <div class="kv2"><span>İletkenlik (40 dk)</span><b>×3,1</b><span>Bulanıklık</span><b>48 NTU</b><span>pH</span><b>6,1</b><span>Son 6 saat yağış</span><b>0 mm</b></div>
+      <div class="chips"><span class="chip warn">TN-05 olası deşarj</span><span class="chip">tekrar: 3 / ay</span><span class="chip ok">TN-06 normal</span></div>
+      <p class="note">Örnek değerler</p>
+    </div>
+  </section>
+
+  <section class="scene" data-cam="dicle-temizlik" id="dicle-temizlik">
+    <div class="panel">
+      <div class="eyebrow water">Dicle · 2/3 · Nehir temizliği</div>
+      <h2>Sensör nehri temizlemez. Temizliği doğru yere götürür.</h2>
+      <p>Kıyıdaki bazalt taşa bağlanan <strong>yüzer bariyer</strong>, akıntıyla gelen plastiği ve atığı kıyıya yönlendirip toplar. Bağlantı halatındaki gerilme sensörü bariyerin ne kadar dolduğunu tartar. Bariyer dolunca tekne doğrudan oraya gider; boş bariyere boşuna gidilmez.</p>
+      <div class="kv2"><span>Bariyer B-2</span><b>%80 dolu · ~140 kg</b><span>Son boşaltma</span><b>6 gün önce</b><span>En çok atık</span><b>yağıştan sonraki 24 saat</b></div>
+      <p class="mute">Veri biriktikçe atığın nereden ve hangi günlerde geldiği ortaya çıkar. Temizlik kaynağa yönelir.</p>
+      <p class="note">Örnek değerler</p>
+    </div>
+  </section>
+
+  <section class="scene" data-cam="dicle-alg" id="dicle-alg">
+    <div class="panel">
+      <div class="eyebrow water">Dicle · 3/3 · Alg patlaması</div>
+      <h2>Nehrin müsilajı: alg patlaması.</h2>
+      <p>Müsilaj denizde görülür; Dicle'deki karşılığı <strong>alg patlamasıdır</strong>. Tarladan yıkanan azot ve fosfor sıcak, yavaş akan suyla birleşince algler çoğalır, gece sudaki oksijeni tüketir, balıklar ölür.</p>
+      <svg class="well-chart" viewBox="0 0 420 150" role="img" aria-label="Örnek 48 saatlik çözünmüş oksijen grafiği: gündüz yükseliyor, şafakta 5 mg/L eşiğinin altına iniyor">
+        <g font-family="JetBrains Mono, monospace" font-size="10" fill="#a9a194">
+          <line x1="40" y1="20" x2="410" y2="20" stroke="rgba(236,230,218,.08)"/>
+          <line x1="40" y1="110" x2="410" y2="110" stroke="rgba(236,230,218,.08)"/>
+          <text x="34" y="23" text-anchor="end">10</text><text x="34" y="113" text-anchor="end">2</text>
+          <line x1="40" y1="76" x2="410" y2="76" stroke="#e86a48" stroke-dasharray="4 4"/>
+          <text x="44" y="70" fill="#e86a48">5 mg/L eşik</text>
+          <text x="40" y="136">00</text><text x="126" y="136">12</text><text x="218" y="136">00</text><text x="310" y="136">12</text><text x="396" y="136">00</text>
+          <text x="40" y="12" fill="#5fbfd0">Çözünmüş oksijen (mg/L)</text>
+        </g>
+        <path id="doPath" fill="none" stroke="#5fbfd0" stroke-width="2.2" d=""/>
+      </svg>
+      <div class="chips"><span class="chip crit">Şafakta 4,1 mg/L · su 26 °C</span><span class="chip warn">Alg riski: 2 gün</span></div>
+      <p class="mute">Kaynak çoğu zaman tarladaki fazla gübre. Tarım bölümündeki azot ölçümü sonucunu burada verir.</p>
+      <p class="note">Örnek veri</p>
+    </div>
+  </section>
+
+  <!-- ============ FABRİKA ============ -->
+  <section class="scene" data-cam="fabrika-olcum" data-chapter="Fabrika" id="fabrika">
+    <div class="panel">
+      <div class="eyebrow">09 · Fabrika atığı · 1/2 · Ölçüm</div>
+      <h2>Fabrika çıkışında ne aktığını bilmek.</h2>
+      <p>Deşarj noktasındaki taşa takılan su kafası pH, iletkenlik, sıcaklık, redoks (ORP) ve bulanıklığı sürekli ölçer. Ani değişimde numune alınır, ağır metaller laboratuvarda belirlenir.</p>
+      <div class="tox" aria-label="Örnek toksik profil">
+        <div><span>pH</span><div class="bar"><i style="--v:.28;--c:var(--crit)"></i></div><b>4,2 · asidik</b></div>
+        <div><span>İletkenlik</span><div class="bar"><i style="--v:.86;--c:var(--crit)"></i></div><b>6,8 mS/cm · tuzlu</b></div>
+        <div><span>Sıcaklık</span><div class="bar"><i style="--v:.62;--c:var(--ember)"></i></div><b>34 °C</b></div>
+        <div><span>Redoks</span><div class="bar"><i style="--v:.7;--c:var(--ember)"></i></div><b>+420 mV</b></div>
+        <div><span>Bulanıklık</span><div class="bar"><i style="--v:.55;--c:var(--ember)"></i></div><b>85 NTU</b></div>
+      </div>
+      <p><strong>Profil:</strong> asidik, tuzlu, metal yüklü olabilir. Numune laboratuvara, bildirim il çevre birimine gider.</p>
+      <p class="note">Örnek profil</p>
+    </div>
+  </section>
+
+  <section class="scene" data-cam="fabrika-arke" id="fabrika-arke">
+    <div class="panel">
+      <div class="eyebrow">Fabrika atığı · 2/2 · Öneri</div>
+      <h2>Aşırılığı seven arkeler.</h2>
+      <p>Ekstremofil arkeler, çoğu canlının yaşayamadığı tuzlu, asidik ve sıcak ortamlarda yaşayan tek hücreli canlılardır. Bazı türleri bu koşullarda metalleri bağlayabilir ya da bazı organik kirleticileri parçalayabilir. Öneri: sensörün çıkardığı profile göre atık doğru biyoreaktöre yönlendirilir.</p>
+      <div class="heads">
+        <div class="head"><span class="k w">Tuzlu atık</span><h3>Halofil arkeler</h3><p>ör. <i>Haloferax</i>: yüksek tuzda organik kirletici giderimi.</p></div>
+        <div class="head"><span class="k s">Asidik + metal</span><h3>Termoasidofil arkeler</h3><p>ör. <i>Sulfolobus</i>: metal çözme ve geri kazanım.</p></div>
+      </div>
+      <ol class="flow"><li>Ölç</li><li>Yönlendir</li><li>Arıt</li><li>Yeniden ölç</li><li>Yeniden kullan</li></ol>
+      <p class="mute">Arıtılan su analizler uygun çıkarsa soğutma suyu ya da peyzaj sulamasında yeniden kullanılır; geri kazanılan metal ekonomiye döner.</p>
+      <p class="note">Bu bir öneridir. Hangi türün hangi atıkta işe yaradığı Dicle Üniversitesi ile laboratuvarda doğrulanmalıdır.</p>
+    </div>
+  </section>
+
+  <!-- ============ DAĞKAPI SURLARI ============ -->
+  <section class="scene" data-cam="sur-merdiven" data-chapter="Dağkapı" id="dagkapi">
+    <div class="panel">
+      <div class="eyebrow">10 · Dağkapı surları · 1/3 · Merdiven</div>
+      <h2>Taş gündüz ısınır, gece merdiveni aydınlatır.</h2>
+      <p>Sur merdivenlerinin basamak taşlarına yerleşen TaşNabız gündüz topladığı enerjiyi süperkapasitörde saklar. Gece basamağın kenarındaki küçük, sıcak renkli ışığı besler. Kimse yokken çok sönük bir işaret ışığı yanar; biri yaklaşınca 10 saniye parlar.</p>
+      <div class="kv2"><span>Bir ışığın gecelik ihtiyacı</span><b>≈50 J</b><span>Yazın taş başına günlük hasat</span><b>≈90 J</b><span>Kışın</span><b>parlama kısalır, işaret ışığı kalır</b></div>
+      <p class="mute">Işık aşağı bakar ve sıcak renklidir (2700 K altı), yalnız gerektiğinde yanar. Gökyüzüne ışık kaçmaz, duvara kablo ya da delik gerekmez.</p>
+      <p class="note">Tasarım hesabı · projektör değil, basamak ve yön ışığıdır</p>
+    </div>
+  </section>
+
+  <section class="scene" data-cam="sur-yol" id="sur-yol">
+    <div class="panel">
+      <div class="eyebrow">Dağkapı · 2/3 · Yürüyüş yolu</div>
+      <h2>Yol kendi ışığını üretir.</h2>
+      <p>Surların dibindeki yürüyüş yolunun kenarındaki bazalt taşlar aynı şekilde aydınlatma noktası olur. Işıklar yürüyenle birlikte uyanır, arkasından söner.</p>
+      <ul class="list">
+        <li><span><strong>Kablo kazısı yok.</strong> Tarihi alanda kazı izni zor ve pahalıdır.</span></li>
+        <li><span><strong>Elektrik faturası yok.</strong> Enerji taştan gelir.</span></li>
+        <li><span><strong>Işık kirliliği yok.</strong> Boş yol karanlık kalır; gece göğü ve kuşlar için.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="scene" data-cam="sur" id="sur">
+    <div class="panel">
+      <div class="eyebrow">Dağkapı · 3/3 · Restorasyon</div>
+      <h2>Her taşın bir sağlık kartı var.</h2>
+      <p>Surlara takılan miras kafası her 15 dakikada bir uyanır, ölçer, gönderir ve uyur. Taşın nemini, çatlak genişliğini, donma-çözülme sayısını, trafik titreşimini ve yüzeydeki tuz birikimini izler.</p>
+      <div class="card">
+        <div class="ch"><b>Blok D-117 · Dağkapı burcu</b><span class="score">46<small>/100</small></span></div>
+        <div class="kv2"><span>Nem (taşın içinde)</span><b>%78</b><span>Çatlak</span><b>+0,4 mm / 30 gün</b><span>Donma-çözülme</span><b>11 kez</b><span>Aşınma eğilimi</span><b>hızlanıyor</b></div>
+        <span class="chip crit">Öncelikli restorasyon</span>
+      </div>
+      <p class="mute">Restorasyon ekibi hangi taşa önce müdahale edeceğini veriyle seçer. Müdahaleden sonra işe yarayıp yaramadığını da aynı sensör gösterir.</p>
+      <p class="note">Örnek değerler · duvardaki renkler taşların risk durumunu gösterir</p>
+    </div>
+  </section>
+
+  <!-- ============ ATIK KUTULARI ============ -->
+  <section class="scene" data-cam="atik-kutu" data-chapter="Atık" id="atik">
+    <div class="panel">
+      <div class="eyebrow">11 · Atık · 1/2 · Akıllı kutu</div>
+      <h2>Kutu doldu mu? Kutu söyler.</h2>
+      <p>Çöp kutusunun ayağı bazalt bir taban bloğu. İçindeki TEG, güneşte ısınan kutuyla serin zemin arasındaki farktan enerji üretir. Kapağın altındaki ultrasonik sensör doluluğu, tabandaki yük hücresi ağırlığı ölçer.</p>
+      <div class="heads">
+        <div class="head"><span class="k s">Doluluk</span><h3>%80'de haber</h3><p>Toplama listesine girer.</p></div>
+        <div class="head"><span class="k w">Ağırlık</span><h3>Tahmini kg</h3><p>Kamyon kapasitesi doğru planlanır.</p></div>
+        <div class="head"><span class="k s">Sıcaklık</span><h3>Ani artış</h3><p>Kutuda yangın uyarısı.</p></div>
+        <div class="head"><span class="k t">Organik</span><h3>Ayrı kutu</h3><p>Kompost olur, tarlaya döner.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="scene" data-cam="atik-rota" id="atik-rota">
+    <div class="panel">
+      <div class="eyebrow">Atık · 2/2 · Toplama rotası</div>
+      <h2>Kamyon yalnız dolu kutuya gider.</h2>
+      <svg class="well-chart" id="routeMap" viewBox="0 0 420 220" role="img" aria-label="Örnek toplama haritası: 14 kutudan 6'sı dolu, kamyon yalnız onlara uğruyor"></svg>
+      <div class="kv2"><span>Sabit rota</span><b>14 durak · 18 km</b><span>TaşNabız rotası</span><b>6 durak · 9 km</b><span>Yakıt ve CO₂</span><b>yaklaşık yarıya</b></div>
+      <p class="note">Örnek gün · gerçek tasarruf pilotta ölçülür</p>
+    </div>
+  </section>
+
+  <section class="scene" data-cam="veri" data-chapter="Uyarı motoru" id="veri">
     <div class="panel wide">
       <div class="eyebrow water">09 · Veriden karara · kendin dene</div>
       <h2>Tek ölçüme değil, değişimin hızına bakar.</h2>
@@ -466,6 +820,7 @@ footer a{color:var(--bone)}
         <button type="button" role="tab" id="t-kuyu" data-k="kuyu" aria-selected="false">Kuyu</button>
         <button type="button" role="tab" id="t-dicle" data-k="dicle" aria-selected="false">Dicle</button>
         <button type="button" role="tab" id="t-sur" data-k="sur" aria-selected="false">Sur</button>
+        <button type="button" role="tab" id="t-atik" data-k="atik" aria-selected="false">Atık</button>
       </div>
       <div class="engine">
         <div style="display:grid;gap:14px">
@@ -481,7 +836,7 @@ footer a{color:var(--bone)}
     </div>
   </section>
 
-  <section class="scene" data-cam="panel" data-name="Ortak panel" id="panel">
+  <section class="scene" data-cam="panel" data-chapter="Panel" id="panel">
     <div class="panel wide">
       <div class="eyebrow">10 · Tek harita, dört saha</div>
       <h2>Belediye, kooperatif ve muhtar aynı haritaya bakar.</h2>
@@ -523,10 +878,11 @@ footer a{color:var(--bone)}
     </div>
   </section>
 
-  <section class="scene" data-cam="pilot" data-name="Pilot planı" id="pilot">
+  <section class="scene" data-cam="pilot" data-chapter="Pilot" id="pilot">
     <div class="panel wide">
       <div class="eyebrow">11 · Hayata geçirme</div>
       <h2>Üç ayda üç sahada pilot.</h2>
+      <p class="mute">Pilot tarım ve Dicle ile başlar. Dağkapı aydınlatması, atık kutuları ve fabrika çıkışı ikinci fazda aynı tabanla eklenir: yeni donanım değil, yeni bir ölçüm kafası.</p>
       <div class="months">
         <div class="month"><span class="m">1. ay · laboratuvar</span><h3>Enerjiyi kanıtla</h3><ul><li>Dicle Üniversitesi'nde bazalt + TEG ile gün boyu ΔT ve hasat ölçümü</li><li>Simülatördeki modeli gerçek veriyle düzelt</li><li>İlk 10 sensörü topla</li></ul></div>
         <div class="month"><span class="m">2. ay · saha</span><h3>Üç sahaya kur</h3><ul><li>Kooperatif tarlası, köy kuyusu, Dicle kıyısı</li><li>Tek LoRa ağ geçidi, belediye binasına</li><li>İlk ay el ölçümüyle kalibrasyon</li></ul></div>
@@ -539,7 +895,7 @@ footer a{color:var(--bone)}
     </div>
   </section>
 
-  <section class="scene" data-cam="etki" data-name="Etki" id="etki">
+  <section class="scene" data-cam="etki" data-chapter="Etki" id="etki">
     <div class="panel wide">
       <div class="eyebrow">12 · Etki ve ölçülebilir göstergeler</div>
       <h2>Neyi önlüyor, nasıl ölçüyoruz?</h2>
@@ -564,13 +920,15 @@ footer a{color:var(--bone)}
           <tr><td>Kirliliğe müdahale süresi (gün)</td><td>Uyarı zamanı → belediye kaydı</td><td class="mono">−%50</td></tr>
           <tr><td>Hasat edilen enerji (J/gün)</td><td>Sensörün kendi enerji kaydı</td><td class="mono">≥ ihtiyaç × 1,5</td></tr>
           <tr><td>Veri sürekliliği</td><td>Beklenen / ulaşan paket oranı</td><td class="mono">≥%95</td></tr>
-          <tr><td>Pil atığı</td><td>Sahada değiştirilen pil sayısı</td><td class="mono">0</td></tr>
+          <tr><td>Gece aydınlatma elektriği (kWh)</td><td>Taş ışıkları şebekeye bağlı değil</td><td class="mono">0</td></tr>
+            <tr><td>Atık toplama mesafesi (km/gün)</td><td>Kamyon GPS kaydı</td><td class="mono">−%50</td></tr>
+            <tr><td>Pil atığı</td><td>Sahada değiştirilen pil sayısı</td><td class="mono">0</td></tr>
         </tbody></table></div>
       <p class="note">Hedefler pilot için öneridir; temel değerler pilotun ilk ayında ölçülür.</p>
     </div>
   </section>
 
-  <section class="scene" data-cam="juri" data-name="Jüri soruları" id="juri">
+  <section class="scene" data-cam="juri" data-chapter="Jüri" id="juri">
     <div class="panel wide">
       <div class="eyebrow">13 · Jüri sorarsa</div>
       <h2>Beş soru, beş kısa cevap.</h2>
@@ -757,6 +1115,16 @@ footer a{color:var(--bone)}
         if (grow) return { cls: frost ? 'crit' : 'warn', who: 'Belediye kültür varlıkları · TN-09', msg: 'Burç yakınında çatlak 30 günde +' + fmt(mm, 1) + ' mm açıldı' + (frost ? ', ' + b + ' donma-çözülme yaşandı' : '') + '. Yerinde inceleme önerilir.', trace: trace };
         return { cls: 'ok', who: 'Belediye kültür varlıkları · TN-09', msg: 'Çatlak sabit (+' + fmt(mm, 1) + ' mm). Rutin izleme sürüyor.', trace: trace };
       }
+    },
+    atik: {
+      r1: { l: 'Doluluk', min: 0, max: 100, v: 84, f: function(v){ return '%' + v; } },
+      r2: { l: 'Kutu içi sıcaklık', min: 10, max: 80, v: 31, f: function(v){ return v + ' °C'; } },
+      run: function(a, b){
+        var full = a >= 80, fire = b >= 55, trace = [['doluluk ≥ %80', full], ['kutu içi sıcaklık ≥ 55 °C', fire]];
+        if (fire) return { cls: 'crit', who: 'İtfaiye + temizlik işleri · K-07', msg: 'K-07 kutusunda sıcaklık ' + b + ' °C ve yükseliyor. Olası yangın. Konum: Dağkapı meydanı.', trace: trace };
+        if (full) return { cls: 'warn', who: 'Temizlik işleri · K-07', msg: 'K-07 %' + a + ' dolu (~' + Math.round(a * 0.4) + ' kg). Bugünkü toplama rotasına eklendi.', trace: trace };
+        return { cls: 'ok', who: 'Temizlik işleri · K-07', msg: 'K-07 %' + a + ' dolu. Bugün uğramaya gerek yok.', trace: trace };
+      }
     }
   };
   var cur = 'tarla', r1 = document.getElementById('r1'), r2 = document.getElementById('r2');
@@ -782,18 +1150,68 @@ footer a{color:var(--bone)}
   r1.addEventListener('input', runEngine); r2.addEventListener('input', runEngine);
   setTab('tarla');
 
+  /* ================= Telefon, ekran görüntüleri, grafikler ================= */
+  (function(){
+    var phone = document.getElementById('phone'), grid = phone.querySelector('.mgrid');
+    for (var i = 0; i < 24; i++){
+      var r = Math.floor(i / 6), c = i % 6, v = clamp(0.12 + c * 0.13 + r * 0.12 + Math.sin(i * 1.7) * 0.06, 0, 1);
+      var cell = document.createElement('i'); cell.style.background = v < 0.35 ? '#e86a48' : v < 0.55 ? '#f0a04b' : v < 0.75 ? '#7fae9a' : '#5fbfd0'; grid.appendChild(cell);
+    }
+    var shots = document.getElementById('phoneShots');
+    [['1', 'Bildirim'], ['2', 'Parsel özeti'], ['3', 'Nem haritası']].forEach(function(s){
+      var f = document.createElement('figure'), cl = phone.cloneNode(true);
+      cl.removeAttribute('id'); cl.dataset.step = s[0]; cl.classList.remove('glow'); cl.setAttribute('aria-label', 'Uygulama ekranı: ' + s[1]);
+      f.appendChild(cl); var cap = document.createElement('figcaption'); cap.textContent = s[1]; f.appendChild(cap); shots.appendChild(f);
+    });
+    var sec = document.getElementById('tarim'), steps = document.querySelectorAll('#farmSteps li'), last = -1;
+    function farmStep(){
+      var rc = sec.getBoundingClientRect(), span = rc.height - window.innerHeight;
+      var p = clamp(-rc.top / Math.max(1, span), 0, 1);
+      var s = p < 0.2 ? 0 : p < 0.45 ? 1 : p < 0.7 ? 2 : 3;
+      if (s === last) return; last = s;
+      phone.dataset.step = s; phone.classList.toggle('glow', s > 0);
+      steps.forEach(function(li, i){ li.classList.toggle('on', i === s); li.classList.toggle('done', i < s); });
+    }
+    window.addEventListener('scroll', farmStep, { passive: true }); farmStep();
+
+    // çözünmüş oksijen: 48 saatlik örnek eğri
+    var d = '';
+    for (var k = 0; k <= 96; k++){ var h = k / 2, o2 = 6.5 + 2.6 * Math.sin(2 * Math.PI * (h - 9) / 24) - k * 0.008; d += (k ? ' L' : 'M') + (40 + 370 * k / 96).toFixed(1) + ' ' + (110 - (o2 - 2) / 8 * 90).toFixed(1); }
+    document.getElementById('doPath').setAttribute('d', d);
+
+    // toplama rotası haritası
+    var svg = document.getElementById('routeMap'), NS = 'http://www.w3.org/2000/svg';
+    function add(t, a, txt){ var e = document.createElementNS(NS, t); for (var key in a) e.setAttribute(key, a[key]); if (txt != null) e.textContent = txt; svg.appendChild(e); return e; }
+    add('rect', { width: 420, height: 220, rx: 4, fill: '#101417' });
+    [[20, 60, 400, 60], [20, 140, 400, 140], [90, 20, 90, 205], [210, 20, 210, 205], [330, 20, 330, 205]].forEach(function(l){ add('line', { x1: l[0], y1: l[1], x2: l[2], y2: l[3], stroke: 'rgba(236,230,218,.1)', 'stroke-width': 7, 'stroke-linecap': 'round' }); });
+    var bins = [[50, 60, .3], [90, 100, .92], [150, 60, .2], [210, 35, .85], [260, 60, .4], [330, 95, .95], [380, 60, .1], [50, 140, .25], [90, 180, .81], [150, 140, .5], [210, 180, .15], [260, 140, .88], [330, 180, .35], [380, 140, .78]];
+    var depot = [20, 200], route = [depot], left = bins.filter(function(b){ return b[2] >= 0.75; }), cur = depot;
+    while (left.length){ left.sort(function(a, b){ return (Math.abs(a[0] - cur[0]) + Math.abs(a[1] - cur[1])) - (Math.abs(b[0] - cur[0]) + Math.abs(b[1] - cur[1])); }); cur = left.shift(); route.push(cur); }
+    route.push(depot);
+    var pd = 'M' + depot[0] + ' ' + depot[1];
+    for (var q = 1; q < route.length; q++){ pd += ' L' + route[q][0] + ' ' + route[q - 1][1] + ' L' + route[q][0] + ' ' + route[q][1]; }
+    add('path', { d: pd, fill: 'none', stroke: 'var(--ember)', 'stroke-width': 2.5, 'stroke-dasharray': '6 4', 'stroke-linejoin': 'round' });
+    bins.forEach(function(b){
+      var col = b[2] >= 0.75 ? 'var(--crit)' : b[2] >= 0.45 ? 'var(--ember)' : 'var(--dicle)';
+      add('circle', { cx: b[0], cy: b[1], r: 7, fill: col, stroke: '#101417', 'stroke-width': 2 });
+      add('text', { x: b[0] + 10, y: b[1] - 8, 'font-family': 'JetBrains Mono, monospace', 'font-size': 9.5, fill: 'var(--mute)' }, '%' + Math.round(b[2] * 100));
+    });
+    add('rect', { x: depot[0] - 7, y: depot[1] - 7, width: 14, height: 14, fill: 'none', stroke: 'var(--bone)', 'stroke-width': 1.5 });
+    add('text', { x: depot[0] + 12, y: depot[1] + 4, 'font-family': 'JetBrains Mono, monospace', 'font-size': 10, fill: 'var(--bone)' }, 'garaj');
+  })();
+
   /* ================= Ray ================= */
-  var railTargets = Array.prototype.slice.call(document.querySelectorAll('[data-name]'));
+  var railTargets = Array.prototype.slice.call(document.querySelectorAll('[data-chapter]'));
   var rail = document.getElementById('rail');
   railTargets.forEach(function(s){
-    var a = document.createElement('a'); a.href = '#' + s.id; a.innerHTML = '<span>' + s.dataset.name + '</span><i></i>';
+    var a = document.createElement('a'); a.href = '#' + s.id; a.innerHTML = '<span>' + s.dataset.chapter + '</span><i></i>';
     a.addEventListener('click', function(e){ e.preventDefault(); s.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' }); });
     rail.appendChild(a);
   });
   var railLinks = rail.querySelectorAll('a');
   function updateRail(){
     var mid = window.innerHeight / 2, best = 0, bd = 1e9;
-    railTargets.forEach(function(s, i){ if (s.hidden) return; var r = s.getBoundingClientRect(); var d = Math.abs(r.top + r.height / 2 - mid); if (d < bd){ bd = d; best = i; } });
+    railTargets.forEach(function(s, i){ if (s.hidden) return; if (s.getBoundingClientRect().top <= mid) best = i; });
     for (var j = 0; j < railLinks.length; j++){ railLinks[j].classList.toggle('on', j === best); railLinks[j].hidden = railTargets[j].hidden; }
   }
 
@@ -864,13 +1282,14 @@ footer a{color:var(--bone)}
   /* ---------- Sahne B: sensör dünyası ---------- */
   var scene = new THREE.Scene();
   scene.fog = new THREE.Fog(0x3b2e33, 80, 300);
+  var FOG_DAY = new THREE.Color(0x3b2e33), FOG_NIGHT = new THREE.Color(0x0a0d14);
   var camera = new THREE.PerspectiveCamera(42, 1, 0.1, 1200);
   var sunDir = new THREE.Vector3(-0.62, 0.2, -0.76).normalize();
   var sky = new THREE.Mesh(new THREE.SphereGeometry(600, 32, 16), new THREE.ShaderMaterial({
-    side: THREE.BackSide, depthWrite: false, fog: false, uniforms: { uSun: { value: sunDir } },
+    side: THREE.BackSide, depthWrite: false, fog: false, uniforms: { uSun: { value: sunDir }, uNight: { value: 0 } },
     vertexShader: 'varying vec3 vDir; void main(){ vDir = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
     fragmentShader: [
-      'uniform vec3 uSun; varying vec3 vDir;',
+      'uniform vec3 uSun; uniform float uNight; varying vec3 vDir;',
       'void main(){ vec3 d = normalize(vDir); float h = d.y;',
       ' vec3 zen = vec3(0.085,0.125,0.227); vec3 hor = vec3(0.231,0.18,0.2); vec3 warm = vec3(0.94,0.64,0.35);',
       ' float s = max(dot(d, uSun), 0.0);',
@@ -879,11 +1298,13 @@ footer a{color:var(--bone)}
       ' c += warm * pow(s, 5.0) * 0.55 * (1.0 - smoothstep(0.0, 0.55, h));',
       ' c += vec3(1.0,0.86,0.66) * pow(s, 700.0) * 2.0;',
       ' if (h < 0.0) c = hor;',
+      ' float star = step(0.9975, fract(sin(dot(floor(d.xz / max(0.2, h + 0.2) * 300.0), vec2(12.9898, 78.233))) * 43758.5453)) * smoothstep(0.08, 0.3, h);',
+      ' c = mix(c, vec3(0.02, 0.03, 0.07) + vec3(0.85, 0.88, 1.0) * star, uNight * 0.9);',
       ' gl_FragColor = vec4(c, 1.0); }'
     ].join('\n')
   }));
   sky.renderOrder = -1; scene.add(sky);
-  scene.add(new THREE.HemisphereLight(0xb7a4a0, 0x3a2a20, 0.55));
+  var hemi = new THREE.HemisphereLight(0xb7a4a0, 0x3a2a20, 0.55); scene.add(hemi);
   var sun = new THREE.DirectionalLight(0xffb070, 1.35);
   sun.position.copy(sunDir).multiplyScalar(120); sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048);
   var sc = sun.shadow.camera; sc.left = -110; sc.right = 110; sc.top = 110; sc.bottom = -110; sc.near = 1; sc.far = 320;
@@ -1022,10 +1443,10 @@ footer a{color:var(--bone)}
   // Dicle
   var riverMat = new THREE.ShaderMaterial({
     transparent: true, fog: true,
-    uniforms: THREE.UniformsUtils.merge([THREE.UniformsLib.fog, { uTime: { value: 0 }, uPlume: { value: 0 } }]),
+    uniforms: THREE.UniformsUtils.merge([THREE.UniformsLib.fog, { uTime: { value: 0 }, uPlume: { value: 0 }, uAlgae: { value: 0 } }]),
     vertexShader: ['#include <fog_pars_vertex>', 'varying vec2 vUv;', 'void main(){ vUv = uv; vec4 mvPosition = modelViewMatrix * vec4(position, 1.0); gl_Position = projectionMatrix * mvPosition;', '#include <fog_vertex>', '}'].join('\n'),
     fragmentShader: [
-      'uniform float uTime; uniform float uPlume; varying vec2 vUv;', '#include <fog_pars_fragment>',
+      'uniform float uTime; uniform float uPlume; uniform float uAlgae; varying vec2 vUv;', '#include <fog_pars_fragment>',
       'void main(){',
       ' float w = sin(vUv.y * 260.0 - uTime * 1.4 + sin(vUv.x * 11.0 + vUv.y * 40.0) * 1.6) * 0.5 + 0.5;',
       ' float w2 = sin(vUv.y * 610.0 - uTime * 2.3 + vUv.x * 9.0) * 0.5 + 0.5;',
@@ -1035,6 +1456,8 @@ footer a{color:var(--bone)}
       ' vec2 d = (vUv - vec2(0.18, 0.505)) * vec2(1.6, 26.0); float pl = exp(-dot(d, d) * 9.0) * uPlume;',
       ' float tail = exp(-pow((vUv.x - 0.25) * 6.0, 2.0)) * smoothstep(0.505, 0.47, vUv.y) * smoothstep(0.38, 0.47, vUv.y) * uPlume * 0.8;',
       ' c = mix(c, vec3(0.45, 0.33, 0.17), clamp(pl + tail * (0.6 + 0.4 * w), 0.0, 0.9));',
+      ' float al = smoothstep(0.4, 0.85, (sin(vUv.x * 17.0 + vUv.y * 140.0 + uTime * 0.05) * sin(vUv.y * 61.0 - vUv.x * 9.0)) * 0.5 + 0.5 + sin(vUv.y * 23.0) * 0.25) * uAlgae;',
+      ' c = mix(c, vec3(0.3, 0.48, 0.12), al * 0.9);',
       ' gl_FragColor = vec4(c, 0.94);', '#include <fog_fragment>', '}'
     ].join('\n')
   });
@@ -1062,7 +1485,7 @@ footer a{color:var(--bone)}
     trunks.count = crowns.count = k; trunks.castShadow = crowns.castShadow = true; crowns.receiveShadow = true; scene.add(trunks); scene.add(crowns);
   })();
   // Surlar
-  var WALLX = 56;
+  var WALLX = 56, wallInst;
   (function(){
     var inst = new THREE.InstancedMesh(new THREE.BoxGeometry(2.0, 1.08, 2.2), new THREE.MeshStandardMaterial({ roughness: 0.95, flatShading: true }), 240), m = new THREE.Matrix4(), c = new THREE.Color(), k = 0;
     for (var row = 0; row < 5; row++) for (var z = -62; z <= 40 && k < 240; z += 2.25){
@@ -1070,7 +1493,7 @@ footer a{color:var(--bone)}
       var v = 0.16 + rand() * 0.07; c.setRGB(v, v * 0.97, v * 0.95); if (rand() < 0.12) c.setRGB(v * 1.4, v * 1.2, v); inst.setColorAt(k, c); k++;
     }
     for (var z2 = -62; z2 <= 40 && k < 240; z2 += 4.5){ m.makeTranslation(WALLX - 0.3, 6.0, z2); inst.setMatrixAt(k, m); c.setRGB(0.17, 0.165, 0.16); inst.setColorAt(k, c); k++; }
-    inst.count = k; inst.castShadow = true; inst.receiveShadow = true; scene.add(inst);
+    inst.count = k; inst.castShadow = true; inst.receiveShadow = true; scene.add(inst); wallInst = inst;
     [-48, -20, 12, 38].forEach(function(z){ var t = new THREE.Mesh(new THREE.CylinderGeometry(3.3, 3.6, 7.4, 16), new THREE.MeshStandardMaterial({ color: 0x2c2a28, roughness: 0.95, flatShading: true })); t.position.set(WALLX + 0.5, 3.7, z); t.castShadow = true; t.receiveShadow = true; scene.add(t); });
   })();
   var crack = new THREE.Group();
@@ -1110,6 +1533,203 @@ footer a{color:var(--bone)}
     s.beam.position.copy(puck.group.position); s.beam.position.y = 0; scene.add(s.beam);
     puck.led.material = new THREE.MeshBasicMaterial({ color: STATUS[s.st] });
   });
+  /* ---------- Tarlanın içi: kaldırılan toprak dilimi ---------- */
+  function w(k){ return Ws[k] || 0; }
+  var CORE = new THREE.Vector3(-36, 0, 26), CW = 5, CH = 6, CD = 5;
+  var coreGroup = new THREE.Group(); coreGroup.position.copy(CORE); coreGroup.visible = false; scene.add(coreGroup);
+  var soilTex = (function(){
+    var c = document.createElement('canvas'); c.width = 256; c.height = 320; var g = c.getContext('2d');
+    [[0, 60, '#3a2617'], [60, 170, '#6a3c24'], [170, 320, '#7c5a3c']].forEach(function(b){ g.fillStyle = b[2]; g.fillRect(0, b[0], 256, b[1] - b[0]); });
+    for (var i = 0; i < 1800; i++){ g.fillStyle = 'rgba(0,0,0,' + (rand() * 0.25).toFixed(2) + ')'; g.fillRect(rand() * 256, rand() * 320, 2, 2); g.fillStyle = 'rgba(255,220,180,' + (rand() * 0.08).toFixed(2) + ')'; g.fillRect(rand() * 256, rand() * 320, 2, 2); }
+    g.strokeStyle = 'rgba(214,184,140,.6)'; g.lineWidth = 1.3;
+    for (var r = 0; r < 16; r++){ var x = 10 + rand() * 236, y = 0; g.beginPath(); g.moveTo(x, y); for (var s = 0; s < 9; s++){ x += (rand() - 0.5) * 18; y += 5 + rand() * 11; g.lineTo(x, y); } g.stroke(); }
+    for (var k = 0; k < 26; k++){ g.fillStyle = 'rgba(42,40,42,.95)'; g.beginPath(); g.ellipse(rand() * 256, 180 + rand() * 140, 4 + rand() * 9, 3 + rand() * 6, rand() * 3, 0, 6.3); g.fill(); }
+    g.fillStyle = 'rgba(236,230,218,.85)'; g.font = '600 12px monospace';
+    [[0.1, '10 cm'], [0.3, '30 cm'], [0.6, '60 cm']].forEach(function(d){ var y = d[0] * 320; g.fillRect(0, y, 14, 2); g.fillText(d[1], 18, y + 4); });
+    return new THREE.CanvasTexture(c);
+  })();
+  var soilMat = new THREE.MeshStandardMaterial({ map: soilTex, roughness: 1 });
+  var coreMesh = new THREE.Mesh(new THREE.BoxGeometry(CW, CH, CD), [soilMat, soilMat, new THREE.MeshStandardMaterial({ color: 0x3e3a22, roughness: 1 }), new THREE.MeshStandardMaterial({ color: 0x1e1510 }), soilMat, soilMat]);
+  coreMesh.position.y = CH / 2; coreMesh.castShadow = true; coreGroup.add(coreMesh);
+  (function(){
+    var geo = new THREE.ConeGeometry(0.16, 0.6, 5); geo.translate(0, 0.3, 0);
+    var m = new THREE.MeshStandardMaterial({ color: 0x5f7a32, flatShading: true });
+    for (var i = 0; i < 4; i++) for (var j = 0; j < 4; j++){ if (i > 0 && i < 3 && j > 0 && j < 3) continue; var cone = new THREE.Mesh(geo, m); cone.position.set(-1.8 + i * 1.2, CH, -1.8 + j * 1.2); coreGroup.add(cone); }
+    var sg = makeStoneGeo(4.4, 1.1, 0.7, 0.9, 2), st = new THREE.Mesh(sg, stoneMat); st.position.set(-0.3, CH - sg.userData.minY, 0.2); st.castShadow = true; coreGroup.add(st);
+  })();
+  var probe = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, CH * 0.66, 8), antMat); probe.position.set(0.9, CH - CH * 0.33, CD / 2 + 0.07); coreGroup.add(probe);
+  var probeRings = [0.1, 0.3, 0.6].map(function(dd){ var ring = new THREE.Mesh(new THREE.TorusGeometry(0.14, 0.035, 6, 20), new THREE.MeshBasicMaterial({ color: 0x5fbfd0 })); ring.rotation.x = Math.PI / 2; ring.position.set(0.9, CH - dd * CH, CD / 2 + 0.07); coreGroup.add(ring); return ring; });
+  function soilParticles(n, color, size, blend){
+    var g = new THREE.BufferGeometry(), p = new Float32Array(n * 3), seed = [];
+    for (var i = 0; i < n; i++) seed.push([rand(), rand(), rand()]);
+    g.setAttribute('position', new THREE.BufferAttribute(p, 3));
+    var pts = new THREE.Points(g, new THREE.PointsMaterial({ map: dotTex, color: color, size: size, transparent: true, opacity: 0, depthWrite: false, blending: blend ? THREE.AdditiveBlending : THREE.NormalBlending }));
+    pts.userData.seed = seed; coreGroup.add(pts); return pts;
+  }
+  var pWater = soilParticles(90, 0x4cc4ff, 0.32, true), pCo2 = soilParticles(60, 0xf2efe8, 0.26, true), pOrg = soilParticles(110, 0xe0a060, 0.2, false), pN = soilParticles(70, 0xa8f06a, 0.24, true);
+  function animSoil(t){
+    var fz = CD / 2 + 0.1;
+    [[pWater, w('tarla-su')], [pCo2, w('tarla-karbon')], [pOrg, w('tarla-organik')], [pN, w('tarla-azot')]].forEach(function(pair, idx){
+      var pts = pair[0], a = pair[1], pos = pts.geometry.attributes.position, sd = pts.userData.seed;
+      pts.material.opacity = a * 0.95; if (a < 0.01) return;
+      for (var i = 0; i < sd.length; i++){
+        var s = sd[i], x = (s[0] - 0.5) * CW * 0.9, y;
+        if (idx === 0) y = CH * (1 - ((s[1] + t * 0.1) % 1) * 0.72);
+        else if (idx === 1) y = CH * (0.3 + ((s[1] + t * 0.08) % 1) * 0.68), x += Math.sin(t * 2 + s[2] * 9) * 0.08;
+        else if (idx === 2) y = CH * (1 - s[1] * 0.32) + Math.sin(t + s[2] * 7) * 0.03;
+        else { y = CH * (0.42 + s[1] * 0.5); x = ((s[0] + t * 0.03 * (s[2] - 0.5)) % 1 - 0.5) * CW * 0.9; }
+        pos.setXYZ(i, x, y, fz + s[2] * 0.05);
+      }
+      pos.needsUpdate = true;
+    });
+    probeRings.forEach(function(r, i){ var k = 1 + w('tarla-su') * 0.5 * (0.5 + 0.5 * Math.sin(t * 4 - i)); r.scale.setScalar(k); });
+  }
+
+  /* ---------- Hevsel: yangın riski ve ark katmanı ---------- */
+  var fireCanvas = document.createElement('canvas'); fireCanvas.width = 128; fireCanvas.height = 512;
+  (function(){
+    var g = fireCanvas.getContext('2d');
+    function blob(x, y, r, col){ var gr = g.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, col); gr.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = gr; g.fillRect(0, 0, 128, 512); }
+    blob(40, 120, 70, 'rgba(232,106,72,.9)'); blob(90, 330, 60, 'rgba(240,160,75,.85)'); blob(60, 430, 40, 'rgba(240,160,75,.6)');
+    g.strokeStyle = 'rgba(95,191,208,.95)'; g.lineWidth = 5; g.beginPath(); g.moveTo(14, 0); for (var y = 0; y <= 512; y += 32) g.lineTo(14 + Math.sin(y * 0.03) * 6, y); g.stroke();
+    g.strokeStyle = 'rgba(236,230,218,.25)'; g.lineWidth = 1; for (var i = 0; i <= 512; i += 32){ g.beginPath(); g.moveTo(0, i); g.lineTo(128, i); g.stroke(); }
+  })();
+  var fireLayer = new THREE.Mesh(new THREE.PlaneGeometry(12, 48), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(fireCanvas), transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide }));
+  fireLayer.rotation.x = -Math.PI / 2; fireLayer.position.set(44, 6, -2); scene.add(fireLayer);
+
+  /* ---------- Dicle: yüzer bariyer, atık, tekne ---------- */
+  var boomA = new THREE.Vector3(24.2, 0.14, 12), boomB = new THREE.Vector3(31.5, 0.14, 17);
+  (function(){
+    var mat = new THREE.MeshStandardMaterial({ color: 0xe0a030, roughness: 0.6 }), ang = Math.atan2(boomB.z - boomA.z, boomB.x - boomA.x);
+    for (var b = 0; b <= 16; b++){ var f = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.17, 0.48, 8), mat); f.rotation.z = Math.PI / 2; f.rotation.y = -ang; f.position.lerpVectors(boomA, boomB, b / 16); scene.add(f); }
+    addStone(22.4, 12, 9.1, 0.9, 0.6, 0.8);
+    var pk = makePuck(1.0); pk.group.position.set(22.1, 0, 13.1); scene.add(pk.group);
+  })();
+  var trash = [], trashGroup = new THREE.Group(); trashGroup.visible = false; scene.add(trashGroup);
+  (function(){
+    var cols = [0xe8e2d6, 0x3a7ab8, 0xd04a3a, 0xf0c040, 0x6fbf6a, 0xffffff];
+    for (var i = 0; i < 46; i++){
+      var m = new THREE.Mesh(new THREE.BoxGeometry(0.28 + rand() * 0.3, 0.08, 0.18 + rand() * 0.25), new THREE.MeshStandardMaterial({ color: cols[i % cols.length], roughness: 0.7 }));
+      var o = { m: m, x: 24.8 + rand() * 10, z: -40 + rand() * 60, sp: 0.8 + rand() * 0.7, stuck: 0, ry: rand() * 6 };
+      m.position.set(o.x, 0.1, o.z); trashGroup.add(m); trash.push(o);
+    }
+  })();
+  function boomZ(x){ return boomA.z + (x - boomA.x) * (boomB.z - boomA.z) / (boomB.x - boomA.x); }
+  var boat = new THREE.Group();
+  (function(){
+    var hull = new THREE.Mesh(new THREE.BoxGeometry(1.3, 0.45, 2.8), new THREE.MeshStandardMaterial({ color: 0xd8d2c4 })); hull.position.y = 0.2;
+    var cab = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.6, 0.9), new THREE.MeshStandardMaterial({ color: 0x2f6f86 })); cab.position.set(0, 0.7, 0.5);
+    boat.add(hull); boat.add(cab); boat.visible = false; scene.add(boat);
+  })();
+
+  /* ---------- Fabrika ve arke biyoreaktörleri ---------- */
+  var FACT = new THREE.Vector3(15, 0, -8);
+  (function(){
+    var wallM = new THREE.MeshStandardMaterial({ color: 0x4d535a, roughness: 0.8 }), roofM = new THREE.MeshStandardMaterial({ color: 0x6a5048, roughness: 0.8, flatShading: true });
+    var body = new THREE.Mesh(new THREE.BoxGeometry(7, 3.4, 5), wallM); body.position.set(FACT.x, 1.7, FACT.z); body.castShadow = body.receiveShadow = true; scene.add(body);
+    for (var i = 0; i < 3; i++){ var rf = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.9, 5), roofM); rf.position.set(FACT.x - 2.3 + i * 2.3, 3.75, FACT.z); rf.rotation.z = 0.38; rf.castShadow = true; scene.add(rf); }
+    var ch = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.45, 7, 12), new THREE.MeshStandardMaterial({ color: 0x8a8580 })); ch.position.set(FACT.x + 2.6, 3.5, FACT.z - 1.6); ch.castShadow = true; scene.add(ch);
+    var band = new THREE.Mesh(new THREE.CylinderGeometry(0.37, 0.37, 0.5, 12), new THREE.MeshStandardMaterial({ color: 0xb04a3a })); band.position.set(FACT.x + 2.6, 6.6, FACT.z - 1.6); scene.add(band);
+    var curve = new THREE.CatmullRomCurve3([new THREE.Vector3(FACT.x + 3.5, 0.4, FACT.z + 1.5), new THREE.Vector3(20, 0.3, -5), new THREE.Vector3(24.3, 0.15, -3.2)]);
+    scene.add(new THREE.Mesh(new THREE.TubeGeometry(curve, 24, 0.16, 8, false), new THREE.MeshStandardMaterial({ color: 0x6a6f75, metalness: 0.4, roughness: 0.5 })));
+  })();
+  var reactors = new THREE.Group(); reactors.visible = false; scene.add(reactors);
+  var archaea = [];
+  [[8, -3], [8, -6.4], [8, -9.8]].forEach(function(p, i){
+    var tank = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.2, 3, 24, 1, true), new THREE.MeshStandardMaterial({ color: 0x5fbfd0, transparent: true, opacity: 0.32, side: THREE.DoubleSide, roughness: 0.2 }));
+    tank.position.set(p[0], 1.5, p[1]); reactors.add(tank);
+    var rim = new THREE.Mesh(new THREE.TorusGeometry(1.2, 0.06, 6, 24), antMat); rim.rotation.x = Math.PI / 2; rim.position.set(p[0], 3, p[1]); reactors.add(rim);
+    var g = new THREE.BufferGeometry(), arr = new Float32Array(80 * 3), sd = [];
+    for (var k = 0; k < 80; k++) sd.push([rand(), rand(), rand()]);
+    g.setAttribute('position', new THREE.BufferAttribute(arr, 3));
+    var pts = new THREE.Points(g, new THREE.PointsMaterial({ map: dotTex, color: [0xff9a6a, 0xffd36a, 0x9be36a][i], size: 0.3, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+    pts.userData = { seed: sd, cx: p[0], cz: p[1] }; reactors.add(pts); archaea.push(pts);
+  });
+  (function(){
+    var curve = new THREE.CatmullRomCurve3([new THREE.Vector3(9.2, 0.3, -3), new THREE.Vector3(16, 0.25, 1.5), new THREE.Vector3(24.3, 0.15, 2)]);
+    reactors.add(new THREE.Mesh(new THREE.TubeGeometry(curve, 24, 0.12, 8, false), new THREE.MeshBasicMaterial({ color: 0x5fbfd0 })));
+  })();
+
+  /* ---------- Dağkapı: merdiven ve yol ışıkları ---------- */
+  var stepLights = [], STEPS = 12;
+  (function(){
+    var m = new THREE.MeshStandardMaterial({ color: 0x34302e, roughness: 0.95, flatShading: true });
+    for (var i = 0; i < STEPS; i++){
+      var h = (i + 1) * 0.46, st = new THREE.Mesh(new THREE.BoxGeometry(1.6, h, 1.0), m);
+      st.position.set(WALLX - 1.8, h / 2, -24 - i - 0.5); st.castShadow = st.receiveShadow = true; scene.add(st);
+      stepLights.push(new THREE.Vector3(WALLX - 2.5, h + 0.07, -24 - i - 0.1));
+    }
+  })();
+  function glowSprite(pos, scale){ var s = new THREE.Sprite(new THREE.SpriteMaterial({ map: dotTex, color: 0xffb867, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending })); s.position.copy(pos); s.scale.setScalar(scale); scene.add(s); return s; }
+  var stepGlows = stepLights.map(function(p){ return glowSprite(p, 1.0); });
+  var pathPts = [];
+  (function(){
+    var bm = new THREE.MeshStandardMaterial({ color: 0x2e2c2b, roughness: 0.9, flatShading: true });
+    for (var z = -20; z <= 34; z += 4){ if (Math.abs(z - 12) < 4) continue; var b = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.2, 0.5, 6), bm); b.position.set(51.6, 0.25, z); b.castShadow = true; scene.add(b); pathPts.push(new THREE.Vector3(51.6, 0.6, z)); }
+  })();
+  var pathGlows = pathPts.map(function(p){ return glowSprite(p, 1.3); });
+  function makeWalker(color){
+    var g = new THREE.Group();
+    var body = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.21, 0.95, 10), new THREE.MeshStandardMaterial({ color: color, roughness: 0.8 })); body.position.y = 0.6;
+    var head = new THREE.Mesh(new THREE.SphereGeometry(0.15, 12, 10), new THREE.MeshStandardMaterial({ color: 0xc98a5a })); head.position.y = 1.23;
+    g.add(body); g.add(head); g.visible = false; scene.add(g); return g;
+  }
+  var walkerA = makeWalker(0x3c5a7a), walkerB = makeWalker(0x7a3c3c);
+  var lampA = new THREE.PointLight(0xffb36b, 0, 6, 2), lampB = new THREE.PointLight(0xffb36b, 0, 6, 2); scene.add(lampA); scene.add(lampB);
+
+  /* ---------- Akıllı atık kutuları ve kamyon ---------- */
+  var BINS = [[-2, 20, .92], [2, 20, .35], [6, 20, .81], [10, 20, .2], [14, 22, .77], [14, 27, .5], [10, 30, .95], [6, 30, .15], [2, 30, .4], [-2, 28, .88]];
+  var binBars = [];
+  (function(){
+    var road = new THREE.MeshStandardMaterial({ color: 0x2a2826, roughness: 1 });
+    [[6, 18.4, 22, 1.8], [6, 31.6, 22, 1.8]].forEach(function(r){ var p = new THREE.Mesh(new THREE.PlaneGeometry(r[2], r[3]), road); p.rotation.x = -Math.PI / 2; p.position.set(r[0], 0.02, r[1]); p.receiveShadow = true; scene.add(p); });
+    [[-4.2, 25], [16.2, 25]].forEach(function(r){ var p = new THREE.Mesh(new THREE.PlaneGeometry(1.8, 15), road); p.rotation.x = -Math.PI / 2; p.position.set(r[0], 0.02, r[1]); p.receiveShadow = true; scene.add(p); });
+    var baseM = new THREE.MeshStandardMaterial({ color: 0x2e3033, roughness: 0.95, flatShading: true }), bodyM = new THREE.MeshStandardMaterial({ color: 0x2f5d3a, roughness: 0.6 }), lidM = new THREE.MeshStandardMaterial({ color: 0x24452c });
+    BINS.forEach(function(b){
+      var base = new THREE.Mesh(new THREE.BoxGeometry(1.15, 0.36, 1.15), baseM); base.position.set(b[0], 0.18, b[1]);
+      var body = new THREE.Mesh(new THREE.BoxGeometry(0.9, 1.2, 0.9), bodyM); body.position.set(b[0], 0.96, b[1]);
+      var lid = new THREE.Mesh(new THREE.BoxGeometry(0.98, 0.08, 0.98), lidM); lid.position.set(b[0], 1.6, b[1]);
+      [base, body, lid].forEach(function(o){ o.castShadow = true; scene.add(o); });
+      var bar = new THREE.Mesh(new THREE.BoxGeometry(0.2, 1, 0.2), new THREE.MeshBasicMaterial({ color: b[2] >= 0.75 ? 0xe86a48 : b[2] >= 0.45 ? 0xf0a04b : 0x5fbfd0, transparent: true, opacity: 0.9 }));
+      bar.position.set(b[0] + 0.8, 0.4, b[1]); bar.visible = false; scene.add(bar); binBars.push({ m: bar, f: b[2] });
+    });
+  })();
+  var truck = new THREE.Group();
+  (function(){
+    var cab = new THREE.Mesh(new THREE.BoxGeometry(1.1, 1.0, 0.9), new THREE.MeshStandardMaterial({ color: 0xe8e2d6 })); cab.position.set(0, 0.7, 1.1);
+    var box = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.3, 2.0), new THREE.MeshStandardMaterial({ color: 0x6f8a3a })); box.position.set(0, 0.85, -0.3);
+    truck.add(cab); truck.add(box); truck.traverse(function(o){ o.castShadow = true; }); truck.visible = false; scene.add(truck);
+  })();
+  var routePts = [new THREE.Vector3(-6, 0.05, 24)];
+  BINS.filter(function(b){ return b[2] >= 0.75; }).forEach(function(b){ routePts.push(new THREE.Vector3(b[0], 0.05, b[1] < 25 ? 18.4 : 31.6)); });
+  routePts.push(new THREE.Vector3(-6, 0.05, 24));
+  var routeLen = [0]; for (var ri = 1; ri < routePts.length; ri++) routeLen.push(routeLen[ri - 1] + routePts[ri].distanceTo(routePts[ri - 1]));
+  var routeLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints(routePts.map(function(p){ return p.clone().setY(0.12); })), new THREE.LineBasicMaterial({ color: 0xf0a04b, transparent: true, opacity: 0 }));
+  scene.add(routeLine);
+
+  /* ---------- Sur duvarı risk haritası için hazırlık ---------- */
+  var wallRisk = [], wallBase = null, lastRisk = -1, RISK = [new THREE.Color(0x5fbfd0), new THREE.Color(0xf0a04b), new THREE.Color(0xe86a48)];
+  (function(){
+    var m = new THREE.Matrix4(), p = new THREE.Vector3();
+    wallBase = wallInst.instanceColor.array.slice();
+    for (var i = 0; i < wallInst.count; i++){
+      wallInst.getMatrixAt(i, m); p.setFromMatrixPosition(m);
+      var r = 0.3 + 0.22 * Math.sin(p.z * 0.37 + p.y * 1.3) + 0.15 * Math.sin(p.z * 1.9) + 0.75 * Math.exp(-Math.pow(p.z + 7, 2) / 10) * (p.y > 1 && p.y < 5 ? 1 : 0.4) - p.y * 0.03;
+      wallRisk.push(clamp(r, 0, 1));
+    }
+  })();
+  var tmpC = new THREE.Color();
+  function paintWall(a){
+    if (Math.abs(a - lastRisk) < 0.01) return; lastRisk = a;
+    var arr = wallInst.instanceColor.array;
+    for (var i = 0; i < wallRisk.length; i++){
+      var r = wallRisk[i], target = r < 0.4 ? RISK[0] : r < 0.7 ? RISK[1] : RISK[2];
+      tmpC.setRGB(wallBase[i*3], wallBase[i*3+1], wallBase[i*3+2]).lerp(target, a * 0.8);
+      arr[i*3] = tmpC.r; arr[i*3+1] = tmpC.g; arr[i*3+2] = tmpC.b;
+    }
+    wallInst.instanceColor.needsUpdate = true;
+  }
+
   var ringGeo = new THREE.RingGeometry(0.92, 1, 48); ringGeo.rotateX(-Math.PI / 2);
   var rings = [];
   for (var r = 0; r < 36; r++){ var rm = new THREE.Mesh(ringGeo, new THREE.MeshBasicMaterial({ color: 0xf0a04b, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide })); rm.visible = false; scene.add(rm); rings.push({ m: rm, t: 1, max: 4 }); }
@@ -1124,10 +1744,24 @@ footer a{color:var(--bone)}
     enerji:  { p: [5.0, 3.8, 7.6],    t: [1.0, 1.8, 0.2] },
     uyku:    { p: [10, 6.5, 13],      t: [1.2, 1.4, 0] },
     moduler: { p: [4.6, 2.6, 4.6],    t: [2.6, 0.9, 0.9] },
-    tarla:   { p: [-14, 17, 31],      t: [-35, 0, 2] },
+    tarla:   { p: [-16, 15, 34],      t: [-35, 0, 5] },
+    'tarla-su':      { p: [-32.5, 4.6, 37],  t: [-36, 3.4, 26] },
+    'tarla-karbon':  { p: [-42.5, 6.2, 39],  t: [-36, 4.0, 26] },
+    'tarla-organik': { p: [-31.5, 7.4, 35],  t: [-36, 5.4, 26] },
+    'tarla-azot':    { p: [-38.5, 3.2, 36],  t: [-36, 2.8, 26] },
+    'tarla-cikis':   { p: [-12, 24, 44],     t: [-34, 0, 10] },
     kuyu:    { p: [-20.5, 6.5, -11],  t: [-30, 3.2, -24] },
+    hevsel:  { p: [38, 21, 36],       t: [47, 1, -2] },
+    'dicle-temizlik': { p: [19, 8, 32],   t: [28.5, 0, 16] },
+    'dicle-alg':      { p: [18, 20, -26], t: [30, 0, -6] },
+    'fabrika-olcum':  { p: [30, 8, 8],    t: [18, 1.5, -5] },
+    'fabrika-arke':   { p: [2, 6.5, 8],   t: [9, 1.5, -6] },
+    'sur-merdiven':   { p: [50.6, 3.8, -14], t: [54.2, 2.6, -30] },
+    'sur-yol':        { p: [50.4, 2.4, 18], t: [52.4, 0.8, -8] },
+    'atik-kutu':      { p: [4, 5.5, 40],  t: [6, 0.8, 25] },
+    'atik-rota':      { p: [6, 34, 50],   t: [6, 0, 25] },
     dicle:   { p: [17, 9, 15],        t: [29, 0, -2] },
-    sur:     { p: [40, 6.5, 5],       t: [55, 3.2, -6] },
+    sur:     { p: [50.8, 5.2, 9],     t: [55, 2.8, -9] },
     veri:    { p: [-44, 26, 34],      t: [6, 12, -40] },
     panel:   { p: [4, 158, 18],       t: [4, 0, -8] },
     pilot:   { p: [-30, 40, 70],      t: [10, 0, -10] },
@@ -1277,8 +1911,68 @@ footer a{color:var(--bone)}
     moist.material.opacity = Ws.tarla * 0.78 + Ws.panel * 0.35; scan.material.opacity = Ws.tarla * 0.9; scan.position.x = FIELD.x - FIELD.size / 2 + ((time * 6) % FIELD.size);
     var wOp = Ws.kuyu, level = 4.6 - wOp * (2.2 + 0.4 * Math.sin(time * 0.6));
     gaugeShell.material.opacity = wOp * 0.4; gaugeLine.material.opacity = wOp * 0.9; gaugeFill.scale.y = level; gaugeFill.position.y = level / 2; gaugeFill.material.opacity = wOp * 0.55; gaugeFill.material.color.setHex(level < 2.8 ? 0xf0a04b : 0x5fbfd0);
-    riverMat.uniforms.uTime.value = time; riverMat.uniforms.uPlume.value = Ws.dicle + Ws.panel * 0.6;
+    riverMat.uniforms.uTime.value = time; riverMat.uniforms.uPlume.value = Ws.dicle + Ws.panel * 0.6 + w('fabrika-olcum');
     crack.userData.mat.opacity = 0.15 + Ws.sur * (0.7 + 0.25 * Math.sin(time * 4));
+    /* ---- Yeni bölümlerin canlandırması ---- */
+    // tarlanın içi
+    var soil = clamp(w('tarla-su') + w('tarla-karbon') + w('tarla-organik') + w('tarla-azot') + w('tarla-cikis') * 0.6, 0, 1);
+    coreGroup.visible = soil > 0.01;
+    if (coreGroup.visible){ coreGroup.position.y = lerp(-CH - 0.5, 0.4, smooth(soil)); coreGroup.rotation.y = Math.sin(time * 0.15) * 0.04; animSoil(time); }
+    // Hevsel
+    fireLayer.material.opacity = w('hevsel') * 0.85;
+    // Dicle: atık ve tekne, alg
+    var tw = w('dicle-temizlik');
+    trashGroup.visible = tw > 0.02; boat.visible = tw > 0.02;
+    if (trashGroup.visible){
+      trash.forEach(function(o){
+        if (o.stuck > 0){ o.stuck -= dt; if (o.stuck <= 0){ o.z = -40; o.x = 24.8 + rand() * 10; } }
+        else {
+          o.z += dt * o.sp;
+          if (o.x < boomB.x && o.z >= boomZ(o.x) - 0.25){ o.z = boomZ(o.x) - 0.25 - rand() * 0.5; o.x -= rand() * 0.6; o.stuck = 14 + rand() * 10; }
+          if (o.z > 60){ o.z = -40; o.x = 24.8 + rand() * 10; }
+        }
+        o.m.position.set(o.x, 0.1 + Math.sin(time * 2 + o.ry) * 0.03, o.z); o.m.rotation.y = o.ry + time * 0.2 * (o.stuck > 0 ? 0 : 1);
+      });
+      boat.position.set(29.6, 0.05 + Math.sin(time * 1.6) * 0.04, lerp(44, 20, smooth(tw))); boat.rotation.y = Math.PI;
+    }
+    riverMat.uniforms.uAlgae.value = w('dicle-alg');
+    // Fabrika
+    var aw = w('fabrika-arke');
+    reactors.visible = aw > 0.02;
+    if (reactors.visible){
+      reactors.scale.set(1, Math.max(0.01, smooth(aw)), 1);
+      archaea.forEach(function(pts){
+        var pos = pts.geometry.attributes.position, sd = pts.userData.seed;
+        for (var i = 0; i < sd.length; i++){ var s = sd[i], ang = s[0] * 6.28 + time * (0.4 + s[2]), rad = 0.2 + s[1] * 0.85; pos.setXYZ(i, pts.userData.cx + Math.cos(ang) * rad, 0.2 + ((s[2] + time * 0.05) % 1) * 2.6, pts.userData.cz + Math.sin(ang) * rad); }
+        pos.needsUpdate = true;
+      });
+    }
+    // Dağkapı: gece, merdiven ve yol ışıkları
+    var N = clamp(w('sur-merdiven') + w('sur-yol'), 0, 1);
+    sun.intensity = 1.35 * (1 - 0.9 * N); hemi.intensity = 0.55 * (1 - 0.6 * N); rimL.intensity = 0.35 * (1 - 0.5 * N);
+    sky.material.uniforms.uNight.value = N; scene.fog.color.copy(FOG_DAY).lerp(FOG_NIGHT, N);
+    walkerA.visible = walkerB.visible = N > 0.02;
+    var ta = (time * 0.06) % 1, wa = walkerA.position;
+    if (ta < 0.35){ var g0 = ta / 0.35; wa.set(lerp(50.6, WALLX - 1.8, g0), 0, lerp(-12, -23.6, g0)); }
+    else { var g1 = (ta - 0.35) / 0.65, si = g1 * STEPS; wa.set(WALLX - 1.8, Math.min(STEPS, Math.floor(si) + 1) * 0.46, -24 - si); }
+    walkerA.rotation.y = ta < 0.35 ? Math.atan2(WALLX - 1.8 - 50.6, -23.6 + 12) : Math.PI;
+    walkerB.position.set(50.4, 0, 34 - ((time * 0.045) % 1) * 56); walkerB.rotation.y = Math.PI;
+    stepGlows.forEach(function(s, i){ var d = s.position.distanceTo(wa), prox = clamp(1 - d / 3.2, 0, 1); s.material.opacity = N * (0.35 + 0.65 * prox); s.scale.setScalar(0.7 + prox * 0.9); });
+    pathGlows.forEach(function(s){ var d = Math.min(s.position.distanceTo(walkerB.position), s.position.distanceTo(wa)), prox = clamp(1 - d / 5, 0, 1); s.material.opacity = N * (0.18 + 0.82 * prox); s.scale.setScalar(0.9 + prox * 1.4); });
+    lampA.position.set(wa.x - 0.6, wa.y + 0.6, wa.z); lampA.intensity = N * 1.6;
+    lampB.position.set(walkerB.position.x + 0.8, 0.8, walkerB.position.z); lampB.intensity = N * 1.6;
+    paintWall(w('sur'));
+    // Atık
+    var bw = clamp(w('atik-kutu') + w('atik-rota'), 0, 1);
+    binBars.forEach(function(b){ b.m.visible = bw > 0.02; var h = Math.max(0.01, b.f * 2.2 * smooth(bw)); b.m.scale.y = h; b.m.position.y = 0.4 + h / 2; });
+    var rw = w('atik-rota'); routeLine.material.opacity = rw; truck.visible = rw > 0.05;
+    if (truck.visible){
+      var L = routeLen[routeLen.length - 1], s0 = (time * 3.2) % L, seg = 1;
+      while (seg < routeLen.length - 1 && routeLen[seg] < s0) seg++;
+      var a0 = routePts[seg - 1], b0 = routePts[seg], f0 = (s0 - routeLen[seg - 1]) / Math.max(0.001, routeLen[seg] - routeLen[seg - 1]);
+      truck.position.lerpVectors(a0, b0, f0).setY(0); truck.rotation.y = Math.atan2(b0.x - a0.x, b0.z - a0.z);
+    }
+
     var op = smooth((explode - 0.55) / 0.35);
     stoneTop.copy(hero.mesh.position); stoneTop.y += hero.geo.userData.maxY * 0.7; stoneTop.x -= 0.6; place(callouts.stone, stoneTop, op);
     tegW.set(-0.8, hero.tegTop.position.y, 0.6); place(callouts.teg, tegW, op); place(callouts.cap, capW, op); place(callouts.ant, tipW, op);
