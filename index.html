@@ -1,0 +1,1171 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>TaşNabız</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: sabit 3B dünya arkada, solda kaydıkça değişen bilgi panelleri; kamera her bölümde başka bir sahaya uçar.
+   Tek, bilinçli koyu görünüm: Diyarbakır'da akşamüstü, bazalt ve Dicle. */
+:root{
+  --ink:#0f1215;          /* gece bazaltı — zemin */
+  --slab:rgba(17,20,24,.80);
+  --slab-solid:#14181c;
+  --bone:#ece6da;         /* metin */
+  --mute:#a9a194;
+  --line:rgba(236,230,218,.14);
+  --ember:#f0a04b;        /* ısı, enerji, uyarı */
+  --dicle:#5fbfd0;        /* su, veri, normal */
+  --soil:#b9774a;         /* toprak */
+  --crit:#e86a48;
+  --olive:#b6c46a;
+  --f-display:"Bricolage Grotesque", "Avenir Next", "Segoe UI", sans-serif;
+  --f-body:"Instrument Sans", "Helvetica Neue", Arial, sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  color-scheme:dark;
+}
+html,body{background:var(--ink);color:var(--bone)}
+body{font-family:var(--f-body);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+body.no-gl{background:radial-gradient(120% 80% at 70% 40%, #3b2e33 0%, #0f1215 70%)}
+
+#world{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:0}
+.callouts{position:fixed;inset:0;pointer-events:none;z-index:1}
+.callout{position:absolute;left:0;top:0;display:flex;align-items:center;gap:8px;white-space:nowrap;
+  font-family:var(--f-mono);font-size:12px;color:var(--bone);opacity:0;transition:opacity .25s}
+.callout::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--ember);box-shadow:0 0 0 4px rgba(240,160,75,.22)}
+.callout span{background:rgba(15,18,21,.82);border:1px solid var(--line);padding:4px 8px;border-radius:3px}
+.callout b{color:var(--ember);font-weight:600}
+
+main{position:relative;z-index:2;max-width:1280px;margin:0 auto}
+.scene{min-height:100vh;display:flex;align-items:center;padding-block:14vh}
+.panel{width:min(470px,100%);min-width:0;background:var(--slab);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
+  border:1px solid var(--line);border-radius:4px;padding:28px 28px 26px;display:grid;gap:14px}
+.panel.wide{width:min(900px,100%)}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ember)}
+.eyebrow.water{color:var(--dicle)}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.02;letter-spacing:-.02em}
+h2{font-size:clamp(30px,4vw,44px);font-weight:800}
+h3{font-size:18px;font-weight:700;letter-spacing:-.01em;line-height:1.2}
+p{margin:0;max-width:62ch}
+.mute{color:var(--mute)}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+strong{color:#fff;font-weight:600}
+
+/* Hero */
+.hero{min-height:100vh;align-items:flex-end;padding-block:18vh 10vh}
+.hero .wrap{display:grid;gap:22px;max-width:640px}
+.hero h1{font-size:clamp(64px,11vw,148px);font-weight:800;letter-spacing:-.045em;line-height:.86}
+.hero h1 em{font-style:normal;color:var(--ember)}
+.hero .lede{font-size:clamp(18px,1.6vw,21px);max-width:34ch;color:var(--bone)}
+.tagrow{display:flex;flex-wrap:wrap;gap:8px}
+.tag{font-family:var(--f-mono);font-size:12px;border:1px solid var(--line);padding:5px 10px;border-radius:999px;color:var(--mute);background:rgba(15,18,21,.55)}
+.scrollhint{font-family:var(--f-mono);font-size:12px;color:var(--mute);display:flex;align-items:center;gap:10px}
+.scrollhint i{display:block;width:1px;height:38px;background:linear-gradient(var(--ember),transparent);animation:drip 2.2s infinite}
+@keyframes drip{0%{transform:scaleY(.2);transform-origin:top}50%{transform:scaleY(1);transform-origin:top}100%{transform:scaleY(1);opacity:0}}
+
+/* X-Y-Z cümlesi */
+.formula{border-left:2px solid var(--ember);padding:4px 0 4px 16px;font-size:18px;line-height:1.45}
+.formula b{font-weight:600}
+.formula .x{color:var(--soil)} .formula .y{color:var(--dicle)} .formula .z{color:var(--ember)}
+
+.list{display:grid;gap:10px;margin:0;padding:0;list-style:none}
+.list li{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:baseline}
+.list li::before{content:"—";color:var(--ember);font-family:var(--f-mono)}
+
+/* Enerji bütçesi */
+.budget{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:3px;overflow:hidden}
+.budget div{background:var(--slab-solid);padding:12px;display:grid;gap:2px;min-width:0}
+.budget .n{font-family:var(--f-mono);font-size:20px;font-weight:600;color:var(--bone);font-variant-numeric:tabular-nums}
+.budget .l{font-size:12px;color:var(--mute);line-height:1.3}
+.note{font-size:12px;color:var(--mute);font-family:var(--f-mono)}
+
+/* Uyku döngüsü şeridi */
+.duty{display:grid;gap:8px}
+.duty .bar{height:30px;border-radius:3px;background:repeating-linear-gradient(90deg,rgba(95,191,208,.12) 0 6px,rgba(95,191,208,.05) 6px 12px);position:relative;overflow:hidden;border:1px solid var(--line)}
+.duty .awake{position:absolute;top:0;bottom:0;width:1%;min-width:4px;background:var(--ember);box-shadow:0 0 14px var(--ember)}
+.duty .awake:nth-child(1){left:0}.duty .awake:nth-child(2){left:25%}.duty .awake:nth-child(3){left:50%}.duty .awake:nth-child(4){left:75%}
+.duty .scale{display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:11px;color:var(--mute)}
+.steps3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.steps3 div{border-top:1px solid var(--line);padding-top:8px;font-size:14px;min-width:0}
+.steps3 b{display:block;font-family:var(--f-mono);font-size:12px;color:var(--ember);font-weight:600;margin-bottom:2px}
+
+/* Kafalar */
+.heads{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.head{border:1px solid var(--line);border-radius:3px;padding:12px;display:grid;gap:4px;min-width:0;background:rgba(15,18,21,.5)}
+.head .k{font-family:var(--f-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase}
+.head p{font-size:13.5px;color:var(--mute)}
+.k.t{color:var(--olive)} .k.w{color:var(--dicle)} .k.u{color:#8fd3e0} .k.s{color:var(--ember)}
+
+/* SMS kartı */
+.sms{background:#1b2126;border:1px solid var(--line);border-radius:14px 14px 14px 4px;padding:12px 14px;font-size:14.5px;display:grid;gap:4px;max-width:360px}
+.sms .from{font-family:var(--f-mono);font-size:11px;color:var(--mute);display:flex;justify-content:space-between;gap:8px}
+.sms.warn{border-color:rgba(240,160,75,.45)}
+.sms.crit{border-color:rgba(232,106,72,.55)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-family:var(--f-mono);font-size:11.5px;padding:4px 8px;border-radius:3px;border:1px solid var(--line);color:var(--mute)}
+.chip.ok{color:var(--dicle);border-color:rgba(95,191,208,.4)}
+.chip.warn{color:var(--ember);border-color:rgba(240,160,75,.45)}
+.chip.crit{color:var(--crit);border-color:rgba(232,106,72,.5)}
+
+/* Kuyu grafiği */
+.well-chart{width:100%;height:auto;display:block}
+
+/* Veri yolu */
+.pipeline{display:grid;grid-template-columns:repeat(4,1fr);gap:0;counter-reset:s}
+.pipeline div{padding:12px 12px 12px 0;border-top:2px solid var(--line);position:relative;min-width:0}
+.pipeline div::before{counter-increment:s;content:counter(s);position:absolute;top:-13px;left:0;width:24px;height:24px;border-radius:50%;background:var(--slab-solid);border:1px solid var(--ember);color:var(--ember);font-family:var(--f-mono);font-size:12px;display:grid;place-items:center}
+.pipeline h3{margin-top:14px;font-size:16px}
+.pipeline p{font-size:13.5px;color:var(--mute)}
+
+/* Panel maketi */
+.dash{display:grid;grid-template-columns:1.35fr 1fr;gap:14px}
+.dash>*{min-width:0}
+.mapbox{border:1px solid var(--line);border-radius:3px;background:#101417;overflow:hidden}
+.mapbox svg{display:block;width:100%;height:auto}
+.alerts{display:grid;gap:8px;align-content:start}
+.alert{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;padding:10px;border:1px solid var(--line);border-radius:3px;background:rgba(15,18,21,.55);font-size:13.5px}
+.alert .dot{width:10px;height:10px;border-radius:50%;margin-top:5px;grid-row:span 2}
+.alert .meta{font-family:var(--f-mono);font-size:11px;color:var(--mute)}
+.badge{justify-self:start;font-family:var(--f-mono);font-size:11px;color:var(--mute);border:1px dashed var(--line);padding:3px 8px;border-radius:3px}
+
+/* Göstergeler tablosu */
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:3px}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:14px}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--f-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);font-weight:400}
+td.mono{color:var(--ember);white-space:nowrap}
+tr:last-child td{border-bottom:0}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.two>*{min-width:0}
+
+/* Jüri soruları */
+.qa{display:grid;gap:8px}
+details{border:1px solid var(--line);border-radius:3px;background:rgba(15,18,21,.55)}
+summary{cursor:pointer;list-style:none;padding:12px 14px;display:flex;gap:12px;align-items:baseline;font-weight:600}
+summary::-webkit-details-marker{display:none}
+summary .pts{font-family:var(--f-mono);font-size:12px;color:var(--ember);min-width:34px}
+summary::after{content:"+";margin-left:auto;font-family:var(--f-mono);color:var(--mute)}
+details[open] summary::after{content:"–"}
+details .ans{padding:0 14px 14px 60px;color:var(--bone);font-size:15px;display:grid;gap:8px}
+summary:focus-visible,.rail a:focus-visible{outline:2px solid var(--ember);outline-offset:2px}
+
+/* HUD */
+.hud{position:fixed;left:max(16px, env(safe-area-inset-left, 0px));bottom:calc(16px + env(safe-area-inset-bottom, 0px));z-index:3;
+  font-family:var(--f-mono);font-size:11.5px;background:rgba(15,18,21,.78);border:1px solid var(--line);border-radius:3px;padding:8px 10px;
+  display:grid;grid-template-columns:auto auto;gap:2px 14px;font-variant-numeric:tabular-nums;color:var(--mute);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.hud b{color:var(--bone);font-weight:600}
+.hud .st{grid-column:1/-1;display:flex;align-items:center;gap:8px;color:var(--bone);border-bottom:1px solid var(--line);padding-bottom:4px;margin-bottom:2px}
+.hud .led{width:8px;height:8px;border-radius:50%;background:#3a4a52}
+.hud.awake .led{background:var(--ember);box-shadow:0 0 10px var(--ember)}
+.hud .hz{grid-column:1/-1;font-size:10px;opacity:.7}
+
+/* Ray */
+.rail{position:fixed;right:max(16px, env(safe-area-inset-right, 0px));top:50%;transform:translateY(-50%);z-index:3;display:grid;gap:6px}
+.rail a{display:flex;align-items:center;justify-content:flex-end;gap:10px;text-decoration:none;color:var(--mute);font-family:var(--f-mono);font-size:11px;padding:3px 0}
+.rail a span{opacity:0;transition:opacity .2s;background:rgba(15,18,21,.8);padding:2px 6px;border-radius:2px}
+.rail a i{width:7px;height:7px;border-radius:50%;border:1px solid var(--mute);display:block;transition:all .2s}
+.rail a:hover span,.rail a.on span{opacity:1}
+.rail a.on{color:var(--bone)}
+.rail a.on i{background:var(--ember);border-color:var(--ember);transform:scale(1.35)}
+
+footer{position:relative;z-index:2;padding-block:40px 120px;max-width:1280px;margin:0 auto;font-size:13px;color:var(--mute);display:grid;gap:6px}
+
+@media (max-width:860px){
+  .scene{align-items:flex-end;padding-block:52vh 8vh;min-height:110vh}
+  .hero{padding-block:46vh 8vh}
+  .rail{display:none}
+  .hud{bottom:auto;top:calc(12px + env(safe-area-inset-top, 0px));grid-template-columns:auto auto auto;font-size:10.5px}
+  .hud .hz{display:none}
+  .dash,.two{grid-template-columns:1fr}
+  .pipeline{grid-template-columns:1fr 1fr;row-gap:22px}
+  .panel{padding:20px}
+  details .ans{padding-left:14px}
+}
+@media (max-width:460px){
+  .heads,.steps3{grid-template-columns:1fr}
+  .budget{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion: reduce){ .scrollhint i{animation:none} .callout{transition:none} }
+</style>
+
+<style>*,*::before,*::after{box-sizing:border-box}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<canvas id="world" aria-hidden="true"></canvas>
+<div class="callouts" aria-hidden="true">
+  <div class="callout" id="c-stone"><span><b>Bazalt</b> · güneşi toplar, sıcak yüz</span></div>
+  <div class="callout" id="c-teg"><span><b>TEG</b> · Seebeck: ΔT → mV</span></div>
+  <div class="callout" id="c-cap"><span><b>Süperkapasitör</b> · pilsiz enerji deposu</span></div>
+  <div class="callout" id="c-ant"><span><b>LoRa</b> · kilometrelerce menzil</span></div>
+</div>
+
+<div class="hud" id="hud" aria-live="off">
+  <div class="st"><span class="led"></span><span id="h-state">UYKU</span><span class="mute">· TN-07</span></div>
+  <span>ΔT</span><b id="h-dt">8.4 °C</b>
+  <span>TEG</span><b id="h-mv">38 mV</b>
+  <span>Depo</span><b id="h-sc">%72</b>
+  <span class="hz">simülasyon · 15 dk döngü = 3 sn</span>
+</div>
+
+<nav class="rail" id="rail" aria-label="Bölümler"></nav>
+
+<main>
+  <section class="scene hero" data-cam="hero" data-name="Giriş" id="giris">
+    <div class="wrap">
+      <div class="eyebrow">Tech4Climate Ideathon · Diyarbakır · 2026</div>
+      <h1>Taş<em>Nabız</em></h1>
+      <p class="lede">Bazalt taşının gündüz ısısı ile toprağın serinliği arasındaki farktan elektrik üreten, <strong>pilsiz ve kablosuz</strong> iklim sensörü. Tarlada suyu, kuyuda yeraltı suyunu, Dicle'de kirliliği, surda nemi ölçer.</p>
+      <div class="tagrow">
+        <span class="tag">Tarım</span><span class="tag">Su yönetimi</span><span class="tag">Akıllı şehir</span><span class="tag">Kültürel miras</span>
+      </div>
+      <div class="scrollhint"><i></i>Kaydır: taştan karara</div>
+    </div>
+  </section>
+
+  <section class="scene" data-cam="sorun" data-name="Sorun" id="sorun">
+    <div class="panel">
+      <div class="eyebrow">01 · Hangi sorunu çözüyoruz</div>
+      <h2>Ölçemediğimiz suyu yönetemiyoruz.</h2>
+      <p>Diyarbakır kuraklıkla, düşen yeraltı suyuyla ve kirlenen Dicle ile yaşıyor. Ama karar verecek kişinin elinde sahadan gelen veri yok.</p>
+      <ul class="list">
+        <li><span>Çiftçi sulama zamanını <strong>gözle</strong> seçiyor; su fazla gidiyor.</span></li>
+        <li><span>Kuyu sahibi su seviyesinin ne hızla düştüğünü <strong>görmeden</strong> çekiyor.</span></li>
+        <li><span>Dicle kıyısındaki kirlilik ancak <strong>şikâyetle</strong>, geç fark ediliyor.</span></li>
+        <li><span>Sahada elektrik yok. Pil değiştirmek ve kablo çekmek kırsalda <strong>sürdürülemiyor</strong>.</span></li>
+      </ul>
+      <p class="formula"><b class="x">Kuraklık ve su kıtlığı</b> içinde, <b class="y">sahadan sürekli veri alınamaması</b> sorununu, <b class="z">enerjisini taştan alan sensörlerle</b>, su krize dönüşmeden önce çözüyoruz.</p>
+    </div>
+  </section>
+
+  <section class="scene" data-cam="enerji" data-name="Enerji" id="enerji">
+    <div class="panel">
+      <div class="eyebrow">02 · Enerji nereden geliyor</div>
+      <h2>Taş ısınır, toprak serin kalır. Arada elektrik doğar.</h2>
+      <p>Bazalt koyu renklidir, güneşte hızla ısınır ve ısıyı uzun süre tutar. Altındaki toprak daha serindir. Taşla toprak arasına yerleştirilen <strong>termoelektrik jeneratör (TEG)</strong> bu sıcaklık farkını Seebeck etkisiyle elektriğe çevirir. Gece fark tersine döner ve modül yine üretir.</p>
+      <div class="budget">
+        <div><span class="n">≈60 mJ</span><span class="l">bir ölçüm + gönderim</span></div>
+        <div><span class="n">≈5,8 J</span><span class="l">günlük ihtiyaç (96 döngü)</span></div>
+        <div><span class="n">≈8,6 J</span><span class="l">0,1 mW hasatla günlük üretim</span></div>
+      </div>
+      <p class="mute">En zayıf senaryoda bile taş, sensörün ihtiyacından fazlasını üretir. 1 F süperkapasitör (≈4,5 J) hasat hiç olmasa bile yaklaşık 18 saat yetiyor.</p>
+      <p class="note">Tasarım hesabı · pilotta sahada doğrulanacak</p>
+    </div>
+  </section>
+
+  <section class="scene" data-cam="uyku" data-name="Uyku döngüsü" id="uyku">
+    <div class="panel">
+      <div class="eyebrow">03 · Az enerjiyle nasıl yetiyor</div>
+      <h2>%99 uyku, %1 uyanıklık.</h2>
+      <p>Sensör zamanının neredeyse tamamını mikroamper düzeyinde uykuda geçirir. 15 dakikada bir 9 saniyeliğine uyanır:</p>
+      <div class="steps3">
+        <div><b>ÖLÇ</b>Nem, sıcaklık, iletkenlik, seviye</div>
+        <div><b>GÖNDER</b>LoRa ile ağ geçidine tek paket</div>
+        <div><b>UYU</b>Kapasitör yeniden dolar</div>
+      </div>
+      <div class="duty" aria-label="Bir saatlik görev döngüsü: dört kısa uyanma, gerisi uyku">
+        <div class="bar"><span class="awake"></span><span class="awake"></span><span class="awake"></span><span class="awake"></span></div>
+        <div class="scale"><span>00:00</span><span>00:15</span><span>00:30</span><span>00:45</span><span>01:00</span></div>
+      </div>
+      <p class="mute">9 sn / 900 sn = %1. Sol alttaki göstergede canlı simülasyonu görüyorsun: halka yayıldığı an paket gönderiliyor.</p>
+    </div>
+  </section>
+
+  <section class="scene" data-cam="moduler" data-name="Modüler kafa" id="moduler">
+    <div class="panel">
+      <div class="eyebrow">04 · Tek taban, takılabilir kafa</div>
+      <h2>Aynı taban. Sahaya göre başka bir kafa.</h2>
+      <p>Enerji, depo ve radyo her yerde aynı. Sadece üstüne takılan ölçüm kafası değişir. Bu yüzden tek ürün dört farklı iklim sorununa hizmet eder ve üretim ucuzlar.</p>
+      <div class="heads">
+        <div class="head"><span class="k t">Tarla kafası</span><h3>Toprak nemi · sıcaklık · CO₂</h3><p>Ne zaman, ne kadar sulanmalı?</p></div>
+        <div class="head"><span class="k u">Kuyu kafası</span><h3>Ultrasonik su seviyesi</h3><p>Yeraltı suyu ne hızla düşüyor?</p></div>
+        <div class="head"><span class="k w">Su kafası</span><h3>İletkenlik · bulanıklık</h3><p>Dicle'de kirlilik nerede başladı?</p></div>
+        <div class="head"><span class="k s">Miras kafası</span><h3>Nem · çatlak genişliği</h3><p>Sur taşı ne zaman risk altına giriyor?</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="scene" data-cam="tarla" data-name="Tarla" id="tarla">
+    <div class="panel">
+      <div class="eyebrow">05 · Tarlada</div>
+      <h2>Bugün sula. Yarın sulama.</h2>
+      <p>Tarladaki taşlar toprak nemini ölçer. Sistem bunu önümüzdeki 48 saatin hava tahminiyle birleştirir ve parselin nem haritasını çıkarır. Çiftçiye akıllı telefon gerekmez; karar <strong>SMS</strong> ile gelir.</p>
+      <div class="sms warn">
+        <div class="from"><span>TaşNabız · Parsel 12</span><span>18:40</span></div>
+        <div>Toprak nemi %18, kuzey köşe kuru. 48 saat yağış yok. Bu akşam sula, 25 dakika yeterli.</div>
+      </div>
+      <div class="sms">
+        <div class="from"><span>TaşNabız · Parsel 12</span><span>ertesi gün 18:40</span></div>
+        <div>Nem %31. Yarın yağmur bekleniyor. Bugün sulama.</div>
+      </div>
+      <div class="chips"><span class="chip ok">TN-02 nem %31</span><span class="chip ok">TN-03 nem %29</span><span class="chip warn">TN-01 nem %18</span></div>
+    </div>
+  </section>
+
+  <section class="scene" data-cam="kuyu" data-name="Kuyu" id="kuyu">
+    <div class="panel">
+      <div class="eyebrow water">06 · Kuyuda</div>
+      <h2>Kuyunun dibini görmeden çekme.</h2>
+      <p>Kuyu ağzındaki taşa takılan kafa, su yüzeyine olan mesafeyi ultrasonik olarak ölçer. Sistem haftalık düşüş hızından bir eğilim çizer ve kuyu kritik seviyeye inmeden <strong>aylar önce</strong> uyarır.</p>
+      <svg class="well-chart" viewBox="0 0 420 170" role="img" aria-label="Örnek kuyu seviyesi: 6 ayda 32 metreden 36,2 metreye düştü, eğilim 42 metrelik kritik seviyeye 7 ay sonra ulaşıyor">
+        <g font-family="JetBrains Mono, monospace" font-size="10" fill="#a9a194">
+          <line x1="40" y1="20" x2="410" y2="20" stroke="rgba(236,230,218,.08)"/>
+          <line x1="40" y1="70" x2="410" y2="70" stroke="rgba(236,230,218,.08)"/>
+          <line x1="40" y1="120" x2="410" y2="120" stroke="rgba(236,230,218,.08)"/>
+          <text x="34" y="23" text-anchor="end">30 m</text>
+          <text x="34" y="73" text-anchor="end">36 m</text>
+          <text x="34" y="123" text-anchor="end">42 m</text>
+          <line x1="40" y1="120" x2="410" y2="120" stroke="#e86a48" stroke-dasharray="4 4"/>
+          <text x="406" y="114" text-anchor="end" fill="#e86a48">kritik seviye</text>
+          <text x="40" y="152">Nis</text><text x="132" y="152">Haz</text><text x="225" y="152">Ağu</text><text x="317" y="152">Eki</text><text x="392" y="152">Ara</text>
+        </g>
+        <path d="M40 37 L71 39 L102 43 L133 45 L164 49 L195 52 L226 57 L232 58" fill="none" stroke="#5fbfd0" stroke-width="2.5"/>
+        <path d="M232 58 L410 105" fill="none" stroke="#f0a04b" stroke-width="2" stroke-dasharray="5 5"/>
+        <circle cx="232" cy="58" r="4.5" fill="#5fbfd0"/>
+        <text x="240" y="50" font-family="JetBrains Mono, monospace" font-size="10.5" fill="#ece6da">bugün 36,2 m · −70 cm/ay</text>
+      </svg>
+      <div class="sms crit">
+        <div class="from"><span>TaşNabız · Kuyu TN-04</span><span>Pzt 08:00</span></div>
+        <div>Seviye son 6 ayda 4,2 m düştü. Bu hızla 7 ay içinde kritik seviyeye iniyor. Muhtarlığa ve DSİ birimine bildirildi.</div>
+      </div>
+      <p class="note">Grafik ve mesaj örnek veridir</p>
+    </div>
+  </section>
+
+  <section class="scene" data-cam="dicle" data-name="Dicle" id="dicle">
+    <div class="panel">
+      <div class="eyebrow water">07 · Dicle kıyısında</div>
+      <h2>Kirliliği şikâyetten önce yakala.</h2>
+      <p>Kıyıdaki bazalt taşları zaten oradadır. Su kafası iletkenlik ve bulanıklığı ölçer. Ani bir sıçrama olduğunda sistem bunun yağmurdan mı yoksa bir deşarjdan mı kaynaklandığını hava verisiyle ayırır, tekrar eden noktaları önceliklendirir ve belediyeye konumla iletir.</p>
+      <div class="sms warn">
+        <div class="from"><span>Belediye paneli · TN-05</span><span>14:12</span></div>
+        <div>İletkenlik 40 dakikada 3,1 kat arttı, yağış yok. Olası deşarj. Konum: Hevsel kıyısı, köprü altı 300 m. Bu ay 3. kez.</div>
+      </div>
+      <div class="chips"><span class="chip warn">öncelik: yüksek</span><span class="chip">tekrar: 3 / ay</span><span class="chip ok">TN-06 normal</span></div>
+      <p class="mute">Aynı kafa Hevsel Bahçeleri'nin kenarında, atık biriken noktalarda toprak kirliliğini izler.</p>
+    </div>
+  </section>
+
+  <section class="scene" data-cam="sur" data-name="Surlar" id="sur">
+    <div class="panel">
+      <div class="eyebrow">08 · Surlarda</div>
+      <h2>Surlar da konuşur.</h2>
+      <p>İklim değişikliği surlarda daha sert donma-çözülme döngüleri ve nem demek. Miras kafası bazalt bloğun nemini ve çatlak genişliğini milimetre altında izler. Taş kendi enerjisini ürettiği için yapıya kablo ya da delik açılmaz.</p>
+      <div class="chips"><span class="chip warn">TN-09 çatlak +0,4 mm / 30 gün</span><span class="chip">nem %78</span><span class="chip">donma-çözülme: 11 kez</span></div>
+      <p class="note">Örnek değerler</p>
+    </div>
+  </section>
+
+  <section class="scene" data-cam="veri" data-name="Veri yolu" id="veri">
+    <div class="panel wide">
+      <div class="eyebrow water">09 · Veri nasıl işleniyor</div>
+      <h2>Taştan karara dört adım.</h2>
+      <div class="pipeline">
+        <div><h3>Ölç</h3><p>Taş sensör 15 dakikada bir ölçüm alır, kendi enerjisiyle.</p></div>
+        <div><h3>Gönder</h3><p>LoRa paketi birkaç kilometre uzaktaki tek ağ geçidine ulaşır. Bir geçit yüzlerce taşa yeter.</p></div>
+        <div><h3>İşle</h3><p>Eğilim, eşik ve hava tahmini birlikte değerlendirilir. Tek ölçüme değil, değişimin hızına bakılır.</p></div>
+        <div><h3>Uyar</h3><p>Bağlama göre mesaj: "sula", "seviye düşüyor", "olası deşarj", "çatlak büyüyor".</p></div>
+      </div>
+      <p class="mute">Havadaki ışıklı paketler bu akışın kendisi: her taştan ağ geçidine, oradan işleme merkezine.</p>
+    </div>
+  </section>
+
+  <section class="scene" data-cam="panel" data-name="Ortak panel" id="panel">
+    <div class="panel wide">
+      <div class="eyebrow">10 · Tek harita, dört saha</div>
+      <h2>Belediye, kooperatif ve muhtar aynı haritaya bakar.</h2>
+      <div class="dash">
+        <div class="mapbox">
+          <svg viewBox="0 0 400 260" role="img" aria-label="Örnek sensör haritası: tarla, kuyu, Dicle, bahçe ve sur sensörleri">
+            <rect width="400" height="260" fill="#11161a"/>
+            <g stroke="rgba(236,230,218,.05)">
+              <path d="M0 52H400M0 104H400M0 156H400M0 208H400M80 0V260M160 0V260M240 0V260M320 0V260"/>
+            </g>
+            <rect x="22" y="70" width="110" height="110" fill="#3a2a1f" stroke="rgba(182,196,106,.35)"/>
+            <text x="28" y="84" font-family="JetBrains Mono, monospace" font-size="9" fill="#b6c46a">TARLA</text>
+            <path d="M228 0 C 222 80, 236 170, 226 260 L 262 260 C 270 170, 258 80, 262 0 Z" fill="#1d4650"/>
+            <text x="235" y="18" font-family="JetBrains Mono, monospace" font-size="9" fill="#5fbfd0">DİCLE</text>
+            <rect x="268" y="40" width="40" height="190" fill="#1f3020"/>
+            <text x="272" y="236" font-family="JetBrains Mono, monospace" font-size="8" fill="#8aa36a">HEVSEL</text>
+            <rect x="318" y="30" width="8" height="210" fill="#4a4746"/>
+            <circle cx="322" cy="50" r="9" fill="#4a4746"/><circle cx="322" cy="135" r="9" fill="#4a4746"/><circle cx="322" cy="215" r="9" fill="#4a4746"/>
+            <text x="334" y="40" font-family="JetBrains Mono, monospace" font-size="9" fill="#a9a194">SUR</text>
+            <g font-family="JetBrains Mono, monospace" font-size="9" fill="#ece6da">
+              <circle cx="40" cy="120" r="6" fill="#f0a04b"/><text x="49" y="123">01</text>
+              <circle cx="88" cy="96" r="6" fill="#5fbfd0"/><text x="97" y="99">02</text>
+              <circle cx="104" cy="150" r="6" fill="#5fbfd0"/><text x="113" y="153">03</text>
+              <circle cx="84" cy="218" r="7" fill="#e86a48"/><text x="94" y="221">04 kuyu</text>
+              <circle cx="228" cy="128" r="6" fill="#f0a04b"/><text x="180" y="131">05</text>
+              <circle cx="262" cy="92" r="6" fill="#5fbfd0"/><text x="241" y="80">06</text>
+              <circle cx="290" cy="110" r="6" fill="#5fbfd0"/><text x="281" y="102">08</text>
+              <circle cx="317" cy="145" r="6" fill="#f0a04b"/><text x="334" y="158">09</text>
+              <rect x="160" y="226" width="10" height="10" fill="none" stroke="#f0a04b"/><text x="174" y="235" fill="#a9a194">ağ geçidi</text>
+            </g>
+          </svg>
+        </div>
+        <div class="alerts">
+          <div class="alert"><span class="dot" style="background:var(--crit)"></span><strong>TN-04 kuyu seviyesi hızlı düşüyor</strong><span class="meta">−70 cm/ay · 7 ay içinde kritik</span></div>
+          <div class="alert"><span class="dot" style="background:var(--ember)"></span><strong>TN-05 olası deşarj</strong><span class="meta">iletkenlik ×3,1 · yağış yok</span></div>
+          <div class="alert"><span class="dot" style="background:var(--ember)"></span><strong>TN-01 parsel kuruyor</strong><span class="meta">nem %18 · SMS gönderildi</span></div>
+          <div class="alert"><span class="dot" style="background:var(--ember)"></span><strong>TN-09 sur çatlağı büyüyor</strong><span class="meta">+0,4 mm / 30 gün</span></div>
+          <span class="badge">Örnek veri · arayüz maketi</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="scene" data-cam="etki" data-name="Etki" id="etki">
+    <div class="panel wide">
+      <div class="eyebrow">11 · Etki ve ölçülebilir göstergeler</div>
+      <h2>Neyi önlüyor, nasıl ölçüyoruz?</h2>
+      <div class="two">
+        <div>
+          <h3 style="margin-bottom:10px">Önlediği şeyler</h3>
+          <ul class="list">
+            <li><span>Gereksiz sulama ve su israfı</span></li>
+            <li><span>Yeraltı suyunun fark edilmeden kritik seviyeye inmesi</span></li>
+            <li><span>Dicle'deki kirliliğin günler sonra fark edilmesi</span></li>
+            <li><span>Pil atığı: sensör başına sıfır kimyasal pil</span></li>
+            <li><span>Surlarda geri dönüşü olmayan hasar</span></li>
+          </ul>
+        </div>
+        <div>
+          <h3 style="margin-bottom:10px">Avantajı</h3>
+          <ul class="list">
+            <li><span>Pil, kablo, güneş paneli yok; bakım neredeyse sıfır</span></li>
+            <li><span>Bölgenin kendi taşı, sahada görünmez ve çalınma riski düşük</span></li>
+            <li><span>Tek taban dört saha: ucuz üretim, hızlı ölçek</span></li>
+            <li><span>SMS ile çalışır; akıllı telefonu olmayan çiftçiye de ulaşır</span></li>
+          </ul>
+        </div>
+      </div>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Gösterge</th><th>Nasıl ölçülür</th><th>Pilot hedefi</th></tr></thead>
+          <tbody>
+            <tr><td>Sulama suyu (m³/dekar)</td><td>Pilot parselde sayaç, önceki sezonla karşılaştırma</td><td class="mono">−%20</td></tr>
+            <tr><td>Kuyu düşüş hızı (cm/ay)</td><td>Ultrasonik seviye, haftalık eğilim</td><td class="mono">≥3 ay erken uyarı</td></tr>
+            <tr><td>Kirliliğe müdahale süresi (gün)</td><td>Uyarı zamanı → belediye kaydı</td><td class="mono">−%50</td></tr>
+            <tr><td>Hasat edilen enerji (J/gün)</td><td>Sensörün kendi enerji kaydı</td><td class="mono">≥ ihtiyaç × 1,5</td></tr>
+            <tr><td>Veri sürekliliği</td><td>Beklenen / ulaşan paket oranı</td><td class="mono">≥%95</td></tr>
+            <tr><td>Pil atığı</td><td>Sahada değiştirilen pil sayısı</td><td class="mono">0</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note">Hedefler pilot için öneridir; temel değerler pilotun ilk ayında ölçülür.</p>
+    </div>
+  </section>
+
+  <section class="scene" data-cam="juri" data-name="Jüri soruları" id="juri">
+    <div class="panel wide">
+      <div class="eyebrow">12 · Jüri sorarsa</div>
+      <h2>Beş soru, beş kısa cevap.</h2>
+      <div class="qa">
+        <details open>
+          <summary><span class="pts">20p</span>Hangi iklim sorununu çözüyorsunuz?</summary>
+          <div class="ans"><p>Kuraklık ve su kıtlığı içinde sahadan sürekli veri alınamamasını. Tarla, kuyu, nehir kıyısı ve sur gibi elektriği olmayan yerlerde ölçüm yapılamıyor; karar gözle ve geç veriliyor.</p></div>
+        </details>
+        <details>
+          <summary><span class="pts">30p</span>Teknoloji çözümün neresinde?</summary>
+          <div class="ans"><p>Üç katmanda: taşın ısı farkından enerji hasadı (TEG + süperkapasitör), %1 görev döngüsüyle LoRa üzerinden veri iletimi, eğilim + eşik + hava tahminini birleştiren uyarı algoritması. Çıktı SMS ve ortak harita paneli.</p></div>
+        </details>
+        <details>
+          <summary><span class="pts">15p</span>Benzerlerinden farkı ne?</summary>
+          <div class="ans"><p>Mevcut saha sensörleri pil ya da güneş paneliyle çalışır ve tek amaca hizmet eder. TaşNabız enerjisini bölgenin kendi bazaltından alır ve tek tabanla dört farklı sahada kullanılır.</p></div>
+        </details>
+        <details>
+          <summary><span class="pts">15p</span>Nasıl hayata geçer?</summary>
+          <div class="ans">
+            <p>Üç ayda üç sahada pilot: bir kooperatif tarlası, bir köy kuyusu, Dicle kıyısında bir nokta. Tek LoRa ağ geçidi hepsini kapsar. Ortaklar: Büyükşehir Belediyesi, Dicle Üniversitesi, bir tarım kooperatifi.</p>
+            <p><strong>Risk:</strong> düşük ΔT günlerinde enerji yetmezse ölçüm aralığı otomatik uzar. <strong>Risk:</strong> sensör kalibrasyonu; ilk ay el ölçümüyle referans seti çıkarılır.</p>
+          </div>
+        </details>
+        <details>
+          <summary><span class="pts">20p</span>Etkisini nasıl ölçeceksiniz?</summary>
+          <div class="ans"><p>Sulama suyu m³/dekar, kuyu düşüş hızı cm/ay, kirliliğe müdahale süresi gün, hasat edilen enerji J/gün, veri sürekliliği % ve sıfır pil atığı. Hepsi sensörün kendi kaydından ya da belediye kaydından gelir.</p></div>
+        </details>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <span>TaşNabız · Tech4Climate Ideathon 2026 için takım prototipi · Diyarbakır</span>
+  <span>Sayılar örnek veri ve tasarım hesabıdır; pilotta sahada doğrulanacaktır.</span>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+  'use strict';
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var sections = Array.prototype.slice.call(document.querySelectorAll('[data-cam]'));
+
+  // ---- Ray (sağdaki bölüm göstergesi) ----
+  var rail = document.getElementById('rail');
+  sections.forEach(function(s){
+    var a = document.createElement('a');
+    a.href = '#' + s.id; a.innerHTML = '<span>' + s.dataset.name + '</span><i></i>';
+    a.addEventListener('click', function(e){ e.preventDefault(); s.scrollIntoView({behavior: reduce ? 'auto' : 'smooth', block:'center'}); });
+    rail.appendChild(a);
+  });
+  var railLinks = rail.querySelectorAll('a');
+
+  if (!window.THREE) { document.body.classList.add('no-gl'); return; }
+  var canvas = document.getElementById('world');
+  var renderer;
+  try { renderer = new THREE.WebGLRenderer({canvas: canvas, antialias: true, powerPreference: 'high-performance'}); }
+  catch (e) { document.body.classList.add('no-gl'); return; }
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.05;
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+  var scene = new THREE.Scene();
+  var FOG = new THREE.Color(0x3b2e33);
+  scene.fog = new THREE.Fog(FOG, 80, 300);
+  var camera = new THREE.PerspectiveCamera(42, 1, 0.1, 1200);
+
+  // ---- Gökyüzü: akşamüstü, alçak güneş ----
+  var sunDir = new THREE.Vector3(-0.62, 0.2, -0.76).normalize();
+  var sky = new THREE.Mesh(new THREE.SphereGeometry(600, 32, 16), new THREE.ShaderMaterial({
+    side: THREE.BackSide, depthWrite: false, fog: false,
+    uniforms: { uSun: { value: sunDir } },
+    vertexShader: 'varying vec3 vDir; void main(){ vDir = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
+    fragmentShader: [
+      'uniform vec3 uSun; varying vec3 vDir;',
+      'void main(){ vec3 d = normalize(vDir); float h = d.y;',
+      ' vec3 zen = vec3(0.045,0.065,0.11); vec3 hor = vec3(0.231,0.18,0.2); vec3 warm = vec3(0.95,0.5,0.25);',
+      ' float s = max(dot(d, uSun), 0.0);',
+      ' vec3 c = mix(hor, zen, smoothstep(-0.02, 0.5, h));',
+      ' c += warm * pow(s, 5.0) * 0.6 * (1.0 - smoothstep(0.0, 0.55, h));',
+      ' c += vec3(1.0,0.82,0.55) * pow(s, 700.0) * 3.0;',
+      ' if (h < 0.0) c = hor;',
+      ' gl_FragColor = vec4(c, 1.0); }'
+    ].join('\n')
+  }));
+  sky.renderOrder = -1;
+  scene.add(sky);
+
+  // ---- Işık ----
+  scene.add(new THREE.HemisphereLight(0x9fb2d6, 0x4a3426, 0.62));
+  var sun = new THREE.DirectionalLight(0xffb070, 2.0);
+  sun.position.copy(sunDir).multiplyScalar(120);
+  sun.castShadow = true;
+  sun.shadow.mapSize.set(2048, 2048);
+  var sc = sun.shadow.camera; sc.left = -110; sc.right = 110; sc.top = 110; sc.bottom = -110; sc.near = 1; sc.far = 320;
+  sun.shadow.bias = -0.0008;
+  scene.add(sun); scene.add(sun.target);
+  var rim = new THREE.DirectionalLight(0x6f8fb5, 0.45); rim.position.set(60, 40, 80); scene.add(rim);
+
+  // ---- Yardımcılar ----
+  var rand = (function(seed){ return function(){ seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; }; })(42);
+  function lerp(a, b, t){ return a + (b - a) * t; }
+  function clamp(x, a, b){ return Math.max(a, Math.min(b, x)); }
+  function smooth(t){ t = clamp(t, 0, 1); return t * t * (3 - 2 * t); }
+
+  var BASALT = new THREE.Color(0x24272b);
+  function makeStoneGeo(seed, sx, sy, sz, detail){
+    var g = new THREE.IcosahedronGeometry(1, detail || 3);
+    var p = g.attributes.position, v = new THREE.Vector3(), minY = 1e9, maxY = -1e9;
+    for (var i = 0; i < p.count; i++){
+      v.fromBufferAttribute(p, i);
+      var n = 0.17 * Math.sin(v.x * 2.1 + seed) + 0.12 * Math.sin(v.y * 3.7 + seed * 1.3)
+            + 0.1 * Math.sin(v.z * 4.3 + seed * 0.7) + 0.05 * Math.sin((v.x + v.z) * 7.0 + seed * 2.1);
+      v.multiplyScalar(1 + n);
+      v.x *= sx; v.y *= sy; v.z *= sz;
+      var floor = -0.18 * sy;
+      if (v.y < floor) v.y = floor + (v.y - floor) * 0.12;
+      p.setXYZ(i, v.x, v.y, v.z);
+      if (v.y < minY) minY = v.y; if (v.y > maxY) maxY = v.y;
+    }
+    g.computeVertexNormals();
+    var cols = new Float32Array(p.count * 3), c = new THREE.Color();
+    for (var j = 0; j < p.count; j++){
+      var vv = 0.85 + 0.3 * Math.abs(Math.sin(p.getX(j) * 9.1 + p.getZ(j) * 7.3 + seed));
+      c.copy(BASALT).multiplyScalar(vv);
+      cols[j*3] = c.r; cols[j*3+1] = c.g; cols[j*3+2] = c.b;
+    }
+    g.setAttribute('color', new THREE.BufferAttribute(cols, 3));
+    g.userData = { minY: minY, maxY: maxY, base: cols.slice() };
+    return g;
+  }
+  var stoneMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.92, metalness: 0.05, flatShading: true });
+  function addStone(x, z, seed, sx, sy, sz){
+    var g = makeStoneGeo(seed, sx, sy, sz, 2);
+    var m = new THREE.Mesh(g, stoneMat);
+    m.position.set(x, -g.userData.minY - 0.02, z);
+    m.rotation.y = seed;
+    m.castShadow = true; m.receiveShadow = true;
+    scene.add(m);
+    return m;
+  }
+
+  // ---- Zemin ----
+  var groundGeo = new THREE.PlaneGeometry(700, 700, 90, 90);
+  groundGeo.rotateX(-Math.PI / 2);
+  (function(){
+    var p = groundGeo.attributes.position, cols = new Float32Array(p.count * 3), c = new THREE.Color();
+    var a = new THREE.Color(0x3a2b21), b = new THREE.Color(0x2b2522);
+    for (var i = 0; i < p.count; i++){
+      var x = p.getX(i), z = p.getZ(i), r = Math.sqrt(x * x + z * z);
+      if (r > 120) p.setY(i, (r - 120) * 0.09 * (0.6 + 0.4 * Math.sin(x * 0.03) * Math.cos(z * 0.025)) );
+      var k = 0.5 + 0.5 * Math.sin(x * 0.11 + Math.cos(z * 0.07) * 2.0);
+      c.copy(a).lerp(b, k);
+      cols[i*3] = c.r; cols[i*3+1] = c.g; cols[i*3+2] = c.b;
+    }
+    groundGeo.setAttribute('color', new THREE.BufferAttribute(cols, 3));
+    groundGeo.computeVertexNormals();
+  })();
+  var ground = new THREE.Mesh(groundGeo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1 }));
+  ground.receiveShadow = true;
+  scene.add(ground);
+
+  // Karacadağ bazaltı: arazide dağınık küçük taşlar
+  (function(){
+    var g = makeStoneGeo(3.3, 1, 0.7, 0.9, 1);
+    var count = 420, inst = new THREE.InstancedMesh(g, stoneMat, count), m = new THREE.Matrix4(), q = new THREE.Quaternion(), s = new THREE.Vector3(), pos = new THREE.Vector3();
+    var placed = 0;
+    while (placed < count){
+      var x = (rand() - 0.5) * 240, z = (rand() - 0.5) * 240;
+      if (Math.abs(x - 30) < 8) continue;
+      if (x > -53 && x < -17 && z > -15 && z < 21) continue;
+      if (x > 36 && x < 62) continue;
+      if (Math.abs(x) < 6 && Math.abs(z) < 6) continue;
+      var k = 0.15 + rand() * rand() * 0.9;
+      s.set(k, k, k); q.setFromAxisAngle(new THREE.Vector3(0,1,0), rand() * 6.28);
+      pos.set(x, 0.05 * k, z); m.compose(pos, q, s); inst.setMatrixAt(placed++, m);
+    }
+    inst.castShadow = true; inst.receiveShadow = true;
+    scene.add(inst);
+  })();
+
+  // ---- Kahraman taş + TEG düzeneği (merkez, TN-07) ----
+  var hero = { };
+  hero.geo = makeStoneGeo(1.7, 2.2, 1.45, 1.9, 3);
+  hero.mesh = new THREE.Mesh(hero.geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.85, metalness: 0.05, flatShading: true }));
+  hero.mesh.castShadow = true; hero.mesh.receiveShadow = true;
+  hero.baseY = 0.24 - hero.geo.userData.minY;
+  hero.mesh.position.y = hero.baseY;
+  scene.add(hero.mesh);
+
+  var ceramic = new THREE.MeshStandardMaterial({ color: 0xe9e4da, roughness: 0.55 });
+  var copper = new THREE.MeshStandardMaterial({ color: 0xc27a43, roughness: 0.4, metalness: 0.6 });
+  hero.tegBottom = new THREE.Mesh(new THREE.BoxGeometry(1.9, 0.06, 1.9), ceramic);
+  hero.tegBottom.position.y = 0.05; scene.add(hero.tegBottom);
+  hero.tegTop = new THREE.Mesh(new THREE.BoxGeometry(1.9, 0.06, 1.9), ceramic);
+  hero.tegTop.position.y = 0.21; scene.add(hero.tegTop);
+  hero.pellets = new THREE.InstancedMesh(new THREE.BoxGeometry(0.13, 0.1, 0.13), copper, 49);
+  (function(){ var m = new THREE.Matrix4(), k = 0; for (var i = 0; i < 7; i++) for (var j = 0; j < 7; j++){ m.makeTranslation(-0.75 + i * 0.25, 0, -0.75 + j * 0.25); hero.pellets.setMatrixAt(k++, m); } })();
+  hero.pellets.position.y = 0.13; scene.add(hero.pellets);
+  [hero.tegBottom, hero.tegTop, hero.pellets].forEach(function(o){ o.castShadow = true; });
+
+  // Sensör kutusu (puck): gövde, kart, süperkapasitör, anten, LED
+  var housingMat = new THREE.MeshStandardMaterial({ color: 0x3b3f44, roughness: 0.5, metalness: 0.4 });
+  var boardMat = new THREE.MeshStandardMaterial({ color: 0x1f5a45, roughness: 0.6 });
+  var capMat = new THREE.MeshStandardMaterial({ color: 0x2f6f86, roughness: 0.35, metalness: 0.3 });
+  var antMat = new THREE.MeshStandardMaterial({ color: 0x9a9a9a, roughness: 0.3, metalness: 0.8 });
+  function makePuck(scale){
+    var g = new THREE.Group();
+    var housing = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.34, 0.18, 24), housingMat); housing.position.y = 0.09;
+    var board = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.03, 0.32), boardMat); board.position.y = 0.2;
+    var cap = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.22, 16), capMat); cap.position.set(-0.08, 0.2, 0); cap.rotation.z = Math.PI / 2;
+    var ant = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.018, 0.7, 6), antMat); ant.position.set(0.18, 0.5, 0.05);
+    var led = new THREE.Mesh(new THREE.SphereGeometry(0.045, 10, 8), new THREE.MeshBasicMaterial({ color: 0x5fbfd0 })); led.position.set(0.18, 0.86, 0.05);
+    [housing, board, cap, ant].forEach(function(o){ o.castShadow = true; g.add(o); }); g.add(led);
+    g.scale.setScalar(scale || 1);
+    return { group: g, housing: housing, board: board, cap: cap, ant: ant, led: led };
+  }
+  hero.puck = makePuck(1.6);
+  hero.puckBase = new THREE.Vector3(2.75, 0, 0.9);
+  hero.puck.group.position.copy(hero.puckBase);
+  scene.add(hero.puck.group);
+  // TEG'den kutuya kablo
+  var wireCurve = new THREE.QuadraticBezierCurve3(new THREE.Vector3(0.95, 0.12, 0.3), new THREE.Vector3(2.0, 0.05, 0.6), new THREE.Vector3(2.5, 0.12, 0.85));
+  var wire = new THREE.Mesh(new THREE.TubeGeometry(wireCurve, 20, 0.025, 6, false), new THREE.MeshStandardMaterial({ color: 0x8a2f22, roughness: 0.6 }));
+  scene.add(wire);
+
+  // Elektron akışı
+  var ELN = 70, elGeo = new THREE.BufferGeometry(), elPos = new Float32Array(ELN * 3), elPhase = [];
+  for (var ei = 0; ei < ELN; ei++) elPhase.push(rand());
+  elGeo.setAttribute('position', new THREE.BufferAttribute(elPos, 3));
+  var electrons = new THREE.Points(elGeo, new THREE.PointsMaterial({ color: 0xffb35c, size: 0.14, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending }));
+  scene.add(electrons);
+
+  // ---- Tarla ----
+  var FIELD = { x: -35, z: 3, size: 32 };
+  var fieldSoil = new THREE.Mesh(new THREE.PlaneGeometry(FIELD.size, FIELD.size), new THREE.MeshStandardMaterial({ color: 0x2f2119, roughness: 1 }));
+  fieldSoil.rotation.x = -Math.PI / 2; fieldSoil.position.set(FIELD.x, 0.015, FIELD.z); fieldSoil.receiveShadow = true; scene.add(fieldSoil);
+  var fieldStones = [[-40, 2, 2.1], [-31, 9, 4.4], [-27, -6, 5.9]];
+  (function(){
+    var geo = new THREE.ConeGeometry(0.2, 0.75, 5); geo.translate(0, 0.37, 0);
+    var max = 21 * 30, inst = new THREE.InstancedMesh(geo, new THREE.MeshStandardMaterial({ roughness: 0.9, flatShading: true }), max);
+    var m = new THREE.Matrix4(), c = new THREE.Color(), k = 0;
+    for (var r = 0; r < 21; r++) for (var i = 0; i < 30; i++){
+      var x = FIELD.x - 15 + i * 1.03 + (rand() - 0.5) * 0.2, z = FIELD.z - 15 + r * 1.5;
+      var near = fieldStones.some(function(s){ return Math.hypot(s[0] - x, s[1] - z) < 2.4; });
+      if (near) continue;
+      var dry = (x < -44 && z < 6) ? 1 : 0;
+      var h = 0.75 + rand() * 0.6 - dry * 0.3;
+      m.makeScale(1, h, 1); m.setPosition(x, 0, z); inst.setMatrixAt(k, m);
+      c.setHSL(dry ? 0.12 : 0.2 + rand() * 0.05, 0.45, dry ? 0.32 : 0.26 + rand() * 0.06); inst.setColorAt(k, c);
+      k++;
+    }
+    inst.count = k; inst.castShadow = true; inst.receiveShadow = true; scene.add(inst);
+  })();
+  // Nem haritası katmanı
+  var moistCanvas = document.createElement('canvas'); moistCanvas.width = moistCanvas.height = 256;
+  (function(){
+    var g = moistCanvas.getContext('2d');
+    g.fillStyle = 'rgba(95,191,208,0.55)'; g.fillRect(0, 0, 256, 256);
+    function blob(x, y, r, col){ var gr = g.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, col); gr.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = gr; g.fillRect(0, 0, 256, 256); }
+    blob(40, 110, 120, 'rgba(240,160,75,0.95)');
+    blob(70, 60, 70, 'rgba(232,106,72,0.8)');
+    blob(200, 190, 90, 'rgba(60,150,200,0.7)');
+    g.strokeStyle = 'rgba(236,230,218,0.35)'; g.lineWidth = 1;
+    for (var i = 0; i <= 256; i += 32){ g.beginPath(); g.moveTo(i, 0); g.lineTo(i, 256); g.stroke(); g.beginPath(); g.moveTo(0, i); g.lineTo(256, i); g.stroke(); }
+    g.strokeStyle = 'rgba(236,230,218,0.9)'; g.lineWidth = 3; g.strokeRect(1.5, 1.5, 253, 253);
+  })();
+  var moistTex = new THREE.CanvasTexture(moistCanvas); moistTex.encoding = THREE.sRGBEncoding;
+  var moist = new THREE.Mesh(new THREE.PlaneGeometry(FIELD.size, FIELD.size), new THREE.MeshBasicMaterial({ map: moistTex, transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide }));
+  moist.rotation.x = -Math.PI / 2; moist.position.set(FIELD.x, 1.6, FIELD.z); scene.add(moist);
+  var scan = new THREE.Mesh(new THREE.PlaneGeometry(0.25, FIELD.size), new THREE.MeshBasicMaterial({ color: 0xffd9a0, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide }));
+  scan.rotation.x = -Math.PI / 2; scan.position.set(FIELD.x, 1.62, FIELD.z); scene.add(scan);
+
+  // ---- Kuyu ----
+  var WELL = new THREE.Vector3(-30, 0, -24);
+  (function(){
+    var ring = new THREE.Mesh(new THREE.CylinderGeometry(1.4, 1.5, 1.0, 14, 1, true), new THREE.MeshStandardMaterial({ color: 0x34302d, roughness: 0.95, flatShading: true, side: THREE.DoubleSide }));
+    ring.position.copy(WELL).y = 0.5; ring.castShadow = true; scene.add(ring);
+    var lip = new THREE.Mesh(new THREE.TorusGeometry(1.45, 0.14, 6, 14), stoneMat.clone()); lip.material.vertexColors = false; lip.material.color.set(0x2c2a28);
+    lip.rotation.x = Math.PI / 2; lip.position.copy(WELL).y = 1.0; scene.add(lip);
+    var hole = new THREE.Mesh(new THREE.CircleGeometry(1.35, 14), new THREE.MeshBasicMaterial({ color: 0x050607 }));
+    hole.rotation.x = -Math.PI / 2; hole.position.copy(WELL).y = 0.6; scene.add(hole);
+    for (var i = 0; i < 2; i++){
+      var post = new THREE.Mesh(new THREE.BoxGeometry(0.16, 2.4, 0.16), new THREE.MeshStandardMaterial({ color: 0x5a4130 }));
+      post.position.set(WELL.x + (i ? 1.6 : -1.6), 1.2, WELL.z); post.castShadow = true; scene.add(post);
+    }
+    var beam = new THREE.Mesh(new THREE.BoxGeometry(3.4, 0.14, 0.14), new THREE.MeshStandardMaterial({ color: 0x5a4130 }));
+    beam.position.set(WELL.x, 2.35, WELL.z); scene.add(beam);
+  })();
+  var gauge = new THREE.Group(); gauge.position.set(WELL.x, 3.0, WELL.z); scene.add(gauge);
+  var gaugeShell = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 6, 24, 6, true), new THREE.MeshBasicMaterial({ color: 0x5fbfd0, wireframe: true, transparent: true, opacity: 0 }));
+  gaugeShell.position.y = 3; gauge.add(gaugeShell);
+  var gaugeFill = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 1, 24), new THREE.MeshBasicMaterial({ color: 0x5fbfd0, transparent: true, opacity: 0 }));
+  gauge.add(gaugeFill);
+  var gaugeLine = new THREE.Mesh(new THREE.TorusGeometry(0.66, 0.03, 6, 32), new THREE.MeshBasicMaterial({ color: 0xe86a48, transparent: true, opacity: 0 }));
+  gaugeLine.rotation.x = Math.PI / 2; gaugeLine.position.y = 1.2; gauge.add(gaugeLine);
+
+  // ---- Dicle ----
+  var riverMat = new THREE.ShaderMaterial({
+    transparent: true, fog: true,
+    uniforms: THREE.UniformsUtils.merge([THREE.UniformsLib.fog, { uTime: { value: 0 }, uPlume: { value: 0 } }]),
+    vertexShader: [
+      '#include <fog_pars_vertex>',
+      'varying vec2 vUv;',
+      'void main(){ vUv = uv; vec4 mvPosition = modelViewMatrix * vec4(position, 1.0); gl_Position = projectionMatrix * mvPosition;',
+      '#include <fog_vertex>',
+      '}'
+    ].join('\n'),
+    fragmentShader: [
+      'uniform float uTime; uniform float uPlume; varying vec2 vUv;',
+      '#include <fog_pars_fragment>',
+      'void main(){',
+      ' float w = sin(vUv.y * 260.0 - uTime * 1.4 + sin(vUv.x * 11.0 + vUv.y * 40.0) * 1.6) * 0.5 + 0.5;',
+      ' float w2 = sin(vUv.y * 610.0 - uTime * 2.3 + vUv.x * 9.0) * 0.5 + 0.5;',
+      ' vec3 deep = vec3(0.05, 0.16, 0.2); vec3 hi = vec3(0.32, 0.6, 0.66);',
+      ' float edge = smoothstep(0.0, 0.18, vUv.x) * smoothstep(1.0, 0.82, vUv.x);',
+      ' vec3 c = mix(hi * 0.7, deep, edge) + hi * (w * w2) * 0.18;',
+      ' vec2 d = (vUv - vec2(0.18, 0.505 - mod(uTime * 0.0015, 0.02))) * vec2(1.0, 26.0);',
+      ' d.x *= 1.6; float pl = exp(-dot(d, d) * 9.0) * uPlume;',
+      ' float tail = exp(-pow((vUv.x - 0.25) * 6.0, 2.0)) * smoothstep(0.505, 0.47, vUv.y) * smoothstep(0.38, 0.47, vUv.y) * uPlume * 0.8;',
+      ' c = mix(c, vec3(0.42, 0.31, 0.16), clamp(pl + tail * (0.6 + 0.4 * w), 0.0, 0.9));',
+      ' gl_FragColor = vec4(c, 0.94);',
+      '#include <fog_fragment>',
+      '}'
+    ].join('\n')
+  });
+  var river = new THREE.Mesh(new THREE.PlaneGeometry(12, 340), riverMat);
+  river.rotation.x = -Math.PI / 2; river.position.set(30, 0.04, 0); scene.add(river);
+  [23.4, 36.6].forEach(function(x){
+    var bank = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 340), new THREE.MeshStandardMaterial({ color: 0x2a2420, roughness: 1 }));
+    bank.rotation.x = -Math.PI / 2; bank.position.set(x, 0.03, 0); bank.receiveShadow = true; scene.add(bank);
+  });
+
+  // ---- Hevsel Bahçeleri ----
+  (function(){
+    var trunkG = new THREE.CylinderGeometry(0.12, 0.17, 1.3, 5); trunkG.translate(0, 0.65, 0);
+    var crownG = new THREE.IcosahedronGeometry(1, 0);
+    var N = 110, trunks = new THREE.InstancedMesh(trunkG, new THREE.MeshStandardMaterial({ color: 0x4a3324 }), N);
+    var crowns = new THREE.InstancedMesh(crownG, new THREE.MeshStandardMaterial({ roughness: 0.9, flatShading: true }), N);
+    var m = new THREE.Matrix4(), q = new THREE.Quaternion(), s = new THREE.Vector3(), p = new THREE.Vector3(), c = new THREE.Color(), k = 0;
+    for (var z = -60; z <= 60 && k < N; z += 2.6) for (var x = 39; x <= 49 && k < N; x += 2.8){
+      var px = x + (rand() - 0.5) * 1.4, pz = z + (rand() - 0.5) * 1.4;
+      if (Math.hypot(px - 42, pz - 6) < 2.2) continue;
+      var h = 0.9 + rand() * 0.6, poplar = rand() < 0.3;
+      m.makeScale(1, h * (poplar ? 1.6 : 1), 1); m.setPosition(px, 0, pz); trunks.setMatrixAt(k, m);
+      s.set(poplar ? 0.6 : 0.9 + rand() * 0.4, poplar ? 2.4 : 0.85 + rand() * 0.3, poplar ? 0.6 : 0.9 + rand() * 0.4);
+      q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), rand() * 6.28); p.set(px, 1.3 * h * (poplar ? 1.6 : 1) + s.y * 0.6, pz);
+      m.compose(p, q, s); crowns.setMatrixAt(k, m);
+      c.setHSL(0.22 + rand() * 0.08, 0.38, 0.2 + rand() * 0.08); crowns.setColorAt(k, c);
+      k++;
+    }
+    trunks.count = crowns.count = k;
+    trunks.castShadow = crowns.castShadow = true; crowns.receiveShadow = true;
+    scene.add(trunks); scene.add(crowns);
+  })();
+
+  // ---- Diyarbakır surları ----
+  var WALLX = 56;
+  (function(){
+    var geo = new THREE.BoxGeometry(2.0, 1.08, 2.2);
+    var N = 240, inst = new THREE.InstancedMesh(geo, new THREE.MeshStandardMaterial({ roughness: 0.95, flatShading: true }), N);
+    var m = new THREE.Matrix4(), c = new THREE.Color(), k = 0;
+    for (var row = 0; row < 5; row++) for (var z = -62; z <= 40 && k < N; z += 2.25){
+      var zz = z + (row % 2) * 1.1;
+      m.makeTranslation(WALLX, 0.54 + row * 1.1, zz); inst.setMatrixAt(k, m);
+      var v = 0.12 + rand() * 0.07; c.setRGB(v, v * 0.97, v * 0.95); if (rand() < 0.12) c.setRGB(v * 1.4, v * 1.2, v); inst.setColorAt(k, c);
+      k++;
+    }
+    for (var z2 = -62; z2 <= 40 && k < N; z2 += 4.5){ m.makeTranslation(WALLX - 0.3, 6.0, z2); inst.setMatrixAt(k, m); c.setRGB(0.13, 0.125, 0.12); inst.setColorAt(k, c); k++; }
+    inst.count = k; inst.castShadow = true; inst.receiveShadow = true; scene.add(inst);
+    [-48, -20, 12, 38].forEach(function(z){
+      var t = new THREE.Mesh(new THREE.CylinderGeometry(3.3, 3.6, 7.4, 16), new THREE.MeshStandardMaterial({ color: 0x23211f, roughness: 0.95, flatShading: true }));
+      t.position.set(WALLX + 0.5, 3.7, z); t.castShadow = true; t.receiveShadow = true; scene.add(t);
+    });
+  })();
+  var crack = new THREE.Group();
+  (function(){
+    var mat = new THREE.MeshBasicMaterial({ color: 0xffa14a, transparent: true, opacity: 0.3 });
+    var pts = [[0, 4.6, -7.6], [0, 3.9, -7.1], [0, 3.3, -7.5], [0, 2.6, -6.9], [0, 1.9, -7.3], [0, 1.2, -6.8]];
+    for (var i = 0; i < pts.length - 1; i++){
+      var a = new THREE.Vector3().fromArray(pts[i]), b = new THREE.Vector3().fromArray(pts[i + 1]);
+      var len = a.distanceTo(b), seg = new THREE.Mesh(new THREE.BoxGeometry(0.05, len, 0.07), mat);
+      seg.position.copy(a).add(b).multiplyScalar(0.5); seg.lookAt(b); seg.rotateX(Math.PI / 2); crack.add(seg);
+    }
+    crack.position.x = WALLX - 1.03; crack.userData.mat = mat; scene.add(crack);
+  })();
+
+  // ---- Ağ geçidi ve işleme merkezi ----
+  var GATE = new THREE.Vector3(6, 0, -46);
+  var gateTop = GATE.clone().setY(15);
+  (function(){
+    var mast = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.9, 15, 4, 8, true), new THREE.MeshBasicMaterial({ color: 0xa9a194, wireframe: true, transparent: true, opacity: 0.6 }));
+    mast.position.copy(GATE).y = 7.5; scene.add(mast);
+    var pole = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.12, 15, 6), antMat); pole.position.copy(GATE).y = 7.5; scene.add(pole);
+  })();
+  var gateLamp = new THREE.Mesh(new THREE.SphereGeometry(0.35, 12, 10), new THREE.MeshBasicMaterial({ color: 0xf0a04b }));
+  gateLamp.position.copy(gateTop); scene.add(gateLamp);
+  var HUB = new THREE.Vector3(6, 30, -62);
+  var hubWire = new THREE.Mesh(new THREE.IcosahedronGeometry(3.2, 1), new THREE.MeshBasicMaterial({ color: 0x5fbfd0, wireframe: true, transparent: true, opacity: 0.55 }));
+  hubWire.position.copy(HUB); scene.add(hubWire);
+  var hubCore = new THREE.Mesh(new THREE.IcosahedronGeometry(1.3, 2), new THREE.MeshBasicMaterial({ color: 0xbfeaf2 }));
+  hubCore.position.copy(HUB); scene.add(hubCore);
+
+  // ---- Sensörler ----
+  var STATUS = { ok: 0x5fbfd0, warn: 0xf0a04b, crit: 0xe86a48 };
+  var sensors = [
+    { id: 'TN-01', kind: 'tarla', at: [-40, 2], st: 'warn' },
+    { id: 'TN-02', kind: 'tarla', at: [-31, 9], st: 'ok' },
+    { id: 'TN-03', kind: 'tarla', at: [-27, -6], st: 'ok' },
+    { id: 'TN-04', kind: 'kuyu', st: 'crit' },
+    { id: 'TN-05', kind: 'dicle', at: [24.4, -3], st: 'warn' },
+    { id: 'TN-06', kind: 'dicle', at: [35.6, 10], st: 'ok' },
+    { id: 'TN-08', kind: 'bahce', at: [42, 6], st: 'ok' },
+    { id: 'TN-09', kind: 'sur', st: 'warn' }
+  ];
+  var beamGeo = new THREE.CylinderGeometry(0.45, 0.45, 1, 10, 1, true); beamGeo.translate(0, 0.5, 0);
+  sensors.forEach(function(s, i){
+    var puck = makePuck(1.15);
+    if (s.kind === 'kuyu'){
+      puck.group.position.set(WELL.x + 1.2, 1.12, WELL.z + 0.6);
+    } else if (s.kind === 'sur'){
+      puck.group.position.set(WALLX - 1.0, 2.6, -4.6); puck.group.rotation.z = Math.PI / 2;
+    } else {
+      var seed = 2.3 + i * 1.7;
+      addStone(s.at[0], s.at[1], seed, 1.25, 0.8, 1.05);
+      puck.group.position.set(s.at[0] + 1.3, 0, s.at[1] + 0.5);
+    }
+    scene.add(puck.group);
+    s.puck = puck; s.timer = 0.5 + rand() * 4; s.period = 2.6 + rand() * 3.2;
+    s.tip = new THREE.Vector3();
+    s.beam = new THREE.Mesh(beamGeo, new THREE.MeshBasicMaterial({ color: STATUS[s.st], transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide }));
+    s.beam.position.copy(puck.group.position); s.beam.position.y = 0; scene.add(s.beam);
+    puck.led.material = new THREE.MeshBasicMaterial({ color: STATUS[s.st] });
+  });
+
+  // ---- Halkalar (radyo yayını) ve paketler ----
+  var ringGeo = new THREE.RingGeometry(0.92, 1, 48); ringGeo.rotateX(-Math.PI / 2);
+  var rings = [];
+  for (var r = 0; r < 36; r++){
+    var rm = new THREE.Mesh(ringGeo, new THREE.MeshBasicMaterial({ color: 0xf0a04b, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide }));
+    rm.visible = false; scene.add(rm); rings.push({ m: rm, t: 1, max: 4 });
+  }
+  function emitRing(pos, color, max){
+    for (var i = 0; i < rings.length; i++) if (!rings[i].m.visible){
+      var R = rings[i]; R.t = 0; R.max = max; R.m.position.copy(pos); R.m.material.color.setHex(color); R.m.visible = true; return;
+    }
+  }
+  var packetGeo = new THREE.SphereGeometry(0.2, 10, 8), packets = [];
+  for (var pk = 0; pk < 90; pk++){
+    var pm = new THREE.Mesh(packetGeo, new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.95 }));
+    pm.visible = false; scene.add(pm);
+    packets.push({ m: pm, a: new THREE.Vector3(), b: new THREE.Vector3(), c: new THREE.Vector3(), t: 0, sp: 1, leg: 1 });
+  }
+  function sendPacket(from, to, color, leg){
+    for (var i = 0; i < packets.length; i++) if (!packets[i].m.visible){
+      var P = packets[i], d = from.distanceTo(to);
+      P.a.copy(from); P.b.copy(to); P.c.copy(from).add(to).multiplyScalar(0.5); P.c.y += d * 0.35 + 2;
+      P.t = 0; P.sp = 1 / (1.2 + d * 0.035); P.leg = leg; P.m.material.color.setHex(color); P.m.visible = true; return;
+    }
+  }
+  var tmpA = new THREE.Vector3(), tmpB = new THREE.Vector3();
+  function bez(P, t, out){
+    var u = 1 - t;
+    out.set(0, 0, 0).addScaledVector(P.a, u * u).addScaledVector(P.c, 2 * u * t).addScaledVector(P.b, t * t);
+    return out;
+  }
+
+  // ---- Kamera durakları ----
+  var CAMS = {
+    hero:    { p: [5.8, 3.0, 8.2],    t: [0.2, 1.0, 0] },
+    sorun:   { p: [-22, 46, 74],      t: [10, 0, -8] },
+    enerji:  { p: [4.6, 3.6, 7.0],    t: [0.9, 1.7, 0.2] },
+    uyku:    { p: [10, 6.5, 13],      t: [1.2, 1.4, 0] },
+    moduler: { p: [4.6, 2.6, 4.6],    t: [2.6, 0.9, 0.9] },
+    tarla:   { p: [-14, 17, 31],      t: [-35, 0, 2] },
+    kuyu:    { p: [-20.5, 6.5, -11],  t: [-30, 3.2, -24] },
+    dicle:   { p: [17, 9, 15],        t: [29, 0, -2] },
+    sur:     { p: [40, 6.5, 5],       t: [55, 3.2, -6] },
+    veri:    { p: [-44, 26, 34],      t: [6, 12, -40] },
+    panel:   { p: [4, 158, 18],       t: [4, 0, -8] },
+    etki:    { p: [66, 28, 52],       t: [6, 2, -10] },
+    juri:    { p: [6.4, 3.4, 8.8],    t: [0.2, 1.0, 0] }
+  };
+  var keys = sections.map(function(s){ return s.dataset.cam; });
+  var centers = [];
+  function measure(){
+    centers = sections.map(function(s){ var r = s.getBoundingClientRect(); return r.top + window.scrollY + r.height / 2; });
+  }
+  var W = {}; keys.forEach(function(k){ W[k] = 0; });
+  var Ws = {}; keys.forEach(function(k){ Ws[k] = 0; });
+  var camPos = new THREE.Vector3().fromArray(CAMS.hero.p), camTgt = new THREE.Vector3().fromArray(CAMS.hero.t);
+  camera.position.copy(camPos);
+  var wantPos = new THREE.Vector3(), wantTgt = new THREE.Vector3();
+  var activeIdx = -1;
+
+  function updateScroll(){
+    var mid = window.scrollY + window.innerHeight * 0.5, i = 0;
+    while (i < centers.length - 1 && mid > centers[i + 1]) i++;
+    var t = 0;
+    if (i < centers.length - 1 && mid > centers[i]) t = (mid - centers[i]) / (centers[i + 1] - centers[i]);
+    var e = smooth((t - 0.18) / 0.64);
+    var A = CAMS[keys[i]], B = CAMS[keys[Math.min(i + 1, keys.length - 1)]];
+    wantPos.set(lerp(A.p[0], B.p[0], e), lerp(A.p[1], B.p[1], e), lerp(A.p[2], B.p[2], e));
+    wantTgt.set(lerp(A.t[0], B.t[0], e), lerp(A.t[1], B.t[1], e), lerp(A.t[2], B.t[2], e));
+    // aradaki uzun uçuşlarda kamera biraz yükselsin
+    var flight = Math.hypot(A.p[0] - B.p[0], A.p[1] - B.p[1], A.p[2] - B.p[2]);
+    wantPos.y += Math.sin(e * Math.PI) * clamp(flight * 0.12, 0, 14);
+    keys.forEach(function(k){ W[k] = 0; });
+    W[keys[i]] += 1 - e; W[keys[Math.min(i + 1, keys.length - 1)]] += e;
+    var idx = e > 0.5 ? Math.min(i + 1, keys.length - 1) : i;
+    if (idx !== activeIdx){
+      activeIdx = idx;
+      for (var j = 0; j < railLinks.length; j++) railLinks[j].classList.toggle('on', j === idx);
+    }
+  }
+
+  function resize(){
+    var w = window.innerWidth, h = window.innerHeight;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    if (w > 860) camera.setViewOffset(w, h, -w * 0.2, 0, w, h);
+    else camera.setViewOffset(w, h, 0, h * 0.2, w, h);
+    camera.updateProjectionMatrix();
+    measure();
+  }
+  window.addEventListener('resize', resize);
+  window.addEventListener('load', measure);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(measure);
+  resize();
+
+  // ---- HUD ve etiketler ----
+  var hud = document.getElementById('hud'), hState = document.getElementById('h-state'), hDt = document.getElementById('h-dt'), hMv = document.getElementById('h-mv'), hSc = document.getElementById('h-sc');
+  var callouts = {
+    stone: document.getElementById('c-stone'), teg: document.getElementById('c-teg'),
+    cap: document.getElementById('c-cap'), ant: document.getElementById('c-ant')
+  };
+  var proj = new THREE.Vector3();
+  function place(el, worldPos, op){
+    proj.copy(worldPos).project(camera);
+    var x = (proj.x * 0.5 + 0.5) * window.innerWidth, y = (-proj.y * 0.5 + 0.5) * window.innerHeight;
+    var vis = proj.z < 1 && op > 0.02;
+    el.style.opacity = vis ? op : 0;
+    el.style.transform = 'translate(' + (x - 4).toFixed(1) + 'px,' + (y - 10).toFixed(1) + 'px)';
+  }
+
+  var heroCols = hero.geo.attributes.color, heroPos = hero.geo.attributes.position;
+  var EMBER = new THREE.Color(0xff7a2a), COOL = new THREE.Color(0x2c5f7a), hc = new THREE.Color();
+  var lastHeat = -1;
+  function paintHero(heat){
+    if (Math.abs(heat - lastHeat) < 0.01) return; lastHeat = heat;
+    var base = hero.geo.userData.base, mn = hero.geo.userData.minY, mx = hero.geo.userData.maxY;
+    for (var i = 0; i < heroPos.count; i++){
+      var t = (heroPos.getY(i) - mn) / (mx - mn);
+      hc.setRGB(base[i*3], base[i*3+1], base[i*3+2]);
+      hc.lerp(EMBER, Math.pow(t, 2.2) * heat * 0.75);
+      hc.lerp(COOL, Math.pow(1 - t, 3) * heat * 0.55);
+      heroCols.setXYZ(i, hc.r, hc.g, hc.b);
+    }
+    heroCols.needsUpdate = true;
+  }
+
+  // ---- Döngü ----
+  var time = 0, last = performance.now(), wasAwake = false;
+  var tipW = new THREE.Vector3(), capW = new THREE.Vector3(), stoneTop = new THREE.Vector3(), tegW = new THREE.Vector3();
+  function frame(now){
+    var dt = Math.min((now - last) / 1000, 0.05); last = now;
+    time += dt * (reduce ? 0.35 : 1);
+    updateScroll();
+    var k = 1 - Math.pow(reduce ? 0.0001 : 0.02, dt);
+    camPos.lerp(wantPos, k); camTgt.lerp(wantTgt, k);
+    camera.position.copy(camPos);
+    if (!reduce){ camera.position.x += Math.sin(time * 0.13) * 0.25; camera.position.y += Math.sin(time * 0.17) * 0.12; }
+    camera.lookAt(camTgt);
+    sky.position.copy(camera.position);
+    for (var kk in W) Ws[kk] += (W[kk] - Ws[kk]) * Math.min(1, dt * 4);
+
+    // Kahraman taş: ısı ve patlatılmış görünüm
+    var explode = smooth(Ws.enerji * 1.15);
+    var heat = 0.35 + 0.2 * Math.sin(time * 0.5) + 0.55 * Ws.enerji + 0.25 * Ws.hero;
+    paintHero(clamp(heat, 0, 1));
+    hero.mesh.position.y = hero.baseY + explode * 2.6;
+    hero.tegTop.position.y = 0.21 + explode * 1.0;
+    hero.pellets.position.y = 0.13 + explode * 0.5;
+    hero.puck.group.position.set(hero.puckBase.x + explode * 0.9, explode * 0.9, hero.puckBase.z + explode * 0.4);
+    hero.puck.board.position.y = 0.2 + explode * 0.22;
+    hero.puck.cap.position.y = 0.2 + explode * 0.45;
+    hero.puck.ant.position.y = 0.5 + explode * 0.5;
+    hero.puck.led.position.y = 0.86 + explode * 0.5;
+    wire.visible = explode < 0.15;
+
+    // Elektronlar: TEG'den süperkapasitöre
+    hero.puck.cap.getWorldPosition(capW);
+    tegW.set(0.3, hero.pellets.position.y, 0.2);
+    electrons.material.opacity = explode * 0.95;
+    if (explode > 0.02){
+      var ctrl = tmpA.copy(tegW).add(capW).multiplyScalar(0.5); ctrl.y += 1.4;
+      for (var e = 0; e < ELN; e++){
+        var tt = (elPhase[e] + time * 0.45) % 1, u = 1 - tt;
+        var sx = (elPhase[e] - 0.5) * 1.5, sz = ((elPhase[e] * 7.3) % 1 - 0.5) * 1.5;
+        elPos[e*3]   = u*u*(tegW.x + sx*u) + 2*u*tt*ctrl.x + tt*tt*capW.x;
+        elPos[e*3+1] = u*u*tegW.y + 2*u*tt*ctrl.y + tt*tt*capW.y;
+        elPos[e*3+2] = u*u*(tegW.z + sz*u) + 2*u*tt*ctrl.z + tt*tt*capW.z;
+      }
+      elGeo.attributes.position.needsUpdate = true;
+    }
+
+    // Görev döngüsü (15 dk → 3 sn)
+    var ph = time % 3, awake = ph < 0.42;
+    hero.puck.ant.getWorldPosition(tipW); tipW.y += 0.35 * hero.puck.group.scale.y;
+    hero.puck.led.material.color.setHex(awake ? 0xffc27a : 0x2c4a52);
+    if (awake && !wasAwake){
+      emitRing(tipW, 0xf0a04b, 5 + Ws.uyku * 9);
+      if (Ws.uyku > 0.3) setTimeout(function(){ emitRing(tipW, 0xf0a04b, 12); }, 180);
+      sendPacket(tipW, gateTop, 0xffc27a, 1);
+    }
+    wasAwake = awake;
+    hud.classList.toggle('awake', awake);
+    hState.textContent = awake ? 'UYANIK · ölç → gönder' : 'UYKU · depo doluyor';
+    var dT = 8.2 + 2.6 * Math.sin(time * 0.21) + 0.6 * Math.sin(time * 1.3);
+    hDt.textContent = dT.toFixed(1) + ' °C';
+    hMv.textContent = Math.round(dT * 4.6) + ' mV';
+    hSc.textContent = '%' + Math.round(70 + 9 * Math.sin(time * 0.08) - (awake ? 3 : 0));
+
+    // Diğer sensörler
+    sensors.forEach(function(s){
+      s.puck.ant.getWorldPosition(s.tip);
+      if (s.kind === 'sur') s.tip.x -= 0.4; else s.tip.y += 0.4;
+      s.timer -= dt;
+      var blink = s.timer < 0.35;
+      s.puck.led.material.color.setHex(blink ? 0xffffff : STATUS[s.st]);
+      if (s.timer <= 0){
+        s.timer = s.period;
+        emitRing(s.tip, STATUS[s.st], 3 + (Ws[s.kind] || 0) * 6);
+        sendPacket(s.tip, gateTop, STATUS[s.st], 1);
+      }
+      s.beam.material.opacity = Ws.panel * 0.55;
+      s.beam.scale.set(1 + Ws.panel * 2.2, Math.max(0.01, Ws.panel * (s.st === 'crit' ? 46 : s.st === 'warn' ? 32 : 18)), 1 + Ws.panel * 2.2);
+    });
+
+    // Halkalar
+    rings.forEach(function(R){
+      if (!R.m.visible) return;
+      R.t += dt / 1.7;
+      if (R.t >= 1){ R.m.visible = false; return; }
+      var sc2 = 0.2 + R.t * R.max; R.m.scale.set(sc2, 1, sc2);
+      R.m.material.opacity = (1 - R.t) * 0.85;
+    });
+    // Paketler
+    var pkScale = 1 + Ws.veri * 1.4 + Ws.sorun * 1.2 + Ws.etki * 1.2;
+    packets.forEach(function(P){
+      if (!P.m.visible) return;
+      P.t += dt * P.sp;
+      if (P.t >= 1){
+        P.m.visible = false;
+        if (P.leg === 1){ gateLamp.userData.flash = 1; sendPacket(gateTop, HUB, P.m.material.color.getHex(), 2); }
+        else hubCore.userData.flash = 1;
+        return;
+      }
+      bez(P, P.t, P.m.position); P.m.scale.setScalar(pkScale);
+    });
+    gateLamp.userData.flash = (gateLamp.userData.flash || 0) * 0.9;
+    gateLamp.scale.setScalar(1 + gateLamp.userData.flash * 1.2 + Ws.veri * 0.8);
+    hubCore.userData.flash = (hubCore.userData.flash || 0) * 0.92;
+    hubCore.scale.setScalar(1 + hubCore.userData.flash * 0.35 + Ws.veri * 0.3);
+    hubWire.rotation.y += dt * 0.25; hubWire.rotation.x += dt * 0.11;
+
+    // Tarla: nem haritası ve tarama çizgisi
+    moist.material.opacity = Ws.tarla * 0.78 + Ws.panel * 0.35;
+    scan.material.opacity = Ws.tarla * 0.9;
+    scan.position.x = FIELD.x - FIELD.size / 2 + ((time * 6) % FIELD.size);
+
+    // Kuyu ölçer
+    var wOp = Ws.kuyu;
+    gaugeShell.material.opacity = wOp * 0.4; gaugeLine.material.opacity = wOp * 0.9;
+    var level = 4.6 - wOp * (2.2 + 0.4 * Math.sin(time * 0.6));
+    gaugeFill.scale.y = level; gaugeFill.position.y = level / 2; gaugeFill.material.opacity = wOp * 0.55;
+    gaugeFill.material.color.setHex(level < 2.8 ? 0xf0a04b : 0x5fbfd0);
+
+    // Dicle
+    riverMat.uniforms.uTime.value = time;
+    riverMat.uniforms.uPlume.value = Ws.dicle + Ws.panel * 0.6;
+
+    // Sur çatlağı
+    crack.userData.mat.opacity = 0.15 + Ws.sur * (0.7 + 0.25 * Math.sin(time * 4));
+
+    // Etiketler
+    var op = smooth((explode - 0.55) / 0.35);
+    stoneTop.copy(hero.mesh.position); stoneTop.y += hero.geo.userData.maxY * 0.7; stoneTop.x -= 0.6;
+    place(callouts.stone, stoneTop, op);
+    tegW.set(-0.8, hero.tegTop.position.y, 0.6);
+    place(callouts.teg, tegW, op);
+    place(callouts.cap, capW, op);
+    place(callouts.ant, tipW, op);
+
+    renderer.render(scene, camera);
+    requestAnimationFrame(frame);
+  }
+  measure();
+  requestAnimationFrame(frame);
+})();
+</script>
+
+</body>
+</html>
