@@ -1,0 +1,26 @@
+[
+  {
+    "id": "konsept-tarla",
+    "hedef": "uretilen",
+    "baslik": "Tarlada TaşNabız",
+    "prompt": "Product concept render, golden hour, a dark volcanic basalt rock sitting in a dry wheat field near Diyarbakır, Turkey. A small matte-grey puck-shaped sensor with a thin antenna and a tiny amber LED is attached beside the rock, a thin ceramic thermoelectric plate visible under the rock edge. Shallow depth of field, photorealistic but clearly a concept visualization, no text, no logos, 4:3."
+  },
+  {
+    "id": "konsept-dicle",
+    "hedef": "uretilen",
+    "baslik": "Dicle kıyısında su kafası",
+    "prompt": "Concept render of a basalt boulder on the bank of the Tigris river at dusk, a small waterproof sensor head with a probe dipping into the water is mounted on the stone, gentle ripples, distant old stone bridge with ten arches out of focus. Calm, documentary style, no people, no text, 4:3."
+  },
+  {
+    "id": "konsept-sur",
+    "hedef": "uretilen",
+    "baslik": "Sur taşında miras kafası",
+    "prompt": "Close-up concept render of an ancient black basalt city wall block, a tiny discreet sensor clipped to a hairline crack measuring crack width, soft warm evening light, archaeological care, no text, 4:3."
+  },
+  {
+    "id": "konsept-patlatilmis",
+    "hedef": "uretilen",
+    "baslik": "Patlatılmış görünüm",
+    "prompt": "Clean technical exploded-view illustration on a dark background: a basalt rock on top, below it a thermoelectric generator module with two white ceramic plates and copper pellets, a small supercapacitor, a circuit board and a LoRa antenna, arranged vertically with thin leader lines, isometric, minimal, no text labels, 4:3."
+  }
+]

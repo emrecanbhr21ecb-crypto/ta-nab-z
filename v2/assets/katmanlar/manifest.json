@@ -1,0 +1,46 @@
+{
+  "width": 2400,
+  "height": 1200,
+  "layers": [
+    {
+      "id": "gok",
+      "file": "gok.jpg",
+      "depth": 0.0
+    },
+    {
+      "id": "karacadag",
+      "file": "karacadag.webp",
+      "depth": 0.12
+    },
+    {
+      "id": "sur",
+      "file": "sur.webp",
+      "depth": 0.3
+    },
+    {
+      "id": "hevsel",
+      "file": "hevsel.webp",
+      "depth": 0.48
+    },
+    {
+      "id": "dicle_su",
+      "file": "dicle_su.webp",
+      "depth": 0.6
+    },
+    {
+      "id": "dicle",
+      "file": "dicle.webp",
+      "depth": 0.62
+    },
+    {
+      "id": "kurak",
+      "file": "kurak.webp",
+      "depth": 0.85
+    },
+    {
+      "id": "on_plan",
+      "file": "on_plan.webp",
+      "depth": 1.0
+    }
+  ]
+}
