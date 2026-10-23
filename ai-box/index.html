@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>AI-Box</title>
+<title>A-MedBox</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<meta name="description" content="AI-Box: elektronik atığı tanıyan, tartan ve dolunca belediyeye kendi ısısından ürettiği enerjiyle haber veren akıllı toplama kutusu.">
+<meta name="description" content="A-MedBox: elektronik atığı tanıyan, tartan ve dolunca belediyeye kendi ısısından ürettiği enerjiyle haber veren akıllı toplama kutusu.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800;900&family=Figtree:wght@400;500;600;700&family=Martian+Mono:wght@400;500;700&display=swap">
@@ -108,7 +108,7 @@ section{padding-block:56px 8px;scroll-margin-top:20px}
 .sec-h .ref{font-family:var(--f-mono);font-size:11px;color:var(--copper);border:1px solid currentColor;padding:2px 6px;letter-spacing:.04em}
 .sec-h .kick{font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute)}
 h1,h2,h3{font-family:var(--f-display);margin:0;text-wrap:balance;letter-spacing:.005em}
-h1{font-size:clamp(104px, 15vw, 172px);font-weight:900;line-height:.82;letter-spacing:-.01em;text-transform:uppercase}
+h1{font-size:clamp(96px, 13vw, 150px);font-weight:900;line-height:.82;letter-spacing:-.01em;text-transform:uppercase}
 h1 .dash{color:var(--pcb)}
 h2{font-size:clamp(38px, 5.4vw, 58px);font-weight:800;line-height:.95;text-transform:uppercase}
 h3{font-size:22px;font-weight:800;line-height:1.05;text-transform:uppercase;letter-spacing:.02em}
@@ -203,19 +203,47 @@ form.pick{display:grid;gap:12px}
 footer{padding-block:56px 10px;display:grid;gap:12px;font-size:13.5px;color:var(--mute);border-top:2px solid var(--ink);margin-top:56px}
 footer .mono{font-size:11px}
 
+.shots{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(196px,1fr);gap:14px;overflow-x:auto;padding-bottom:10px;scroll-snap-type:x mandatory}
+.ph{scroll-snap-align:start;display:grid;gap:8px;min-width:0}
+.ph figcaption{font-family:var(--f-mono);font-size:10.5px;color:var(--mute);letter-spacing:.04em}
+.scr{aspect-ratio:9/19;max-width:100%;border:7px solid var(--ink);border-radius:28px;background:var(--surface);overflow:hidden;display:grid;grid-template-rows:auto 1fr auto;font-size:12px;position:relative}
+.scr .sb{display:flex;justify-content:space-between;padding:8px 14px 4px;font-family:var(--f-mono);font-size:9px;color:var(--mute)}
+.scr .bd{padding:6px 12px;display:grid;gap:8px;align-content:start;min-height:0}
+.scr .tt{font-family:var(--f-display);font-weight:800;font-size:20px;text-transform:uppercase;line-height:1}
+.scr .cam{aspect-ratio:1/1;background:#0e1714;position:relative;border-radius:10px;overflow:hidden}
+.scr .cam::before{content:"";position:absolute;inset:18%;border:2px solid #4cc38a;border-radius:8px}
+.scr .cam::after{content:"";position:absolute;left:18%;right:18%;top:48%;height:2px;background:#4cc38a;box-shadow:0 0 12px #4cc38a}
+.scr .obj{position:absolute;left:30%;top:34%;width:40%;height:30%;background:linear-gradient(160deg,#c0c6c7,#7f8788);border-radius:4px;transform:rotate(-8deg)}
+.scr .obj.ph2{left:38%;top:24%;width:24%;height:50%;background:#15191a;border:2px solid #333;border-radius:6px}
+.scr .tag{position:absolute;left:8px;bottom:8px;background:#4cc38a;color:#0c1512;font-weight:700;font-size:10px;padding:3px 7px;border-radius:999px}
+.scr .qrv{position:absolute;inset:24%;background:repeating-conic-gradient(#e9efe9 0 25%,#0e1714 0 50%) 0 0/14% 14%}
+.scr .row{display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+.scr .row b{font-family:var(--f-mono);font-size:11px}
+.scr .big{font-family:var(--f-display);font-weight:900;font-size:40px;line-height:.9;color:var(--copper)}
+.scr .pill{background:var(--pcb);color:var(--surface);text-align:center;font-weight:700;padding:8px;border-radius:999px;font-size:12px}
+.scr .pill.o{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
+.scr .map{height:120px;border-radius:10px;background:var(--bg);position:relative;overflow:hidden;background-image:linear-gradient(var(--road) 0 0),linear-gradient(var(--road) 0 0),linear-gradient(var(--road) 0 0);background-size:100% 10px,10px 100%,100% 10px;background-position:0 30%,40% 0,0 80%;background-repeat:no-repeat}
+.scr .pin{position:absolute;width:12px;height:12px;border-radius:50%;border:2px solid var(--surface)}
+.scr .nav{display:flex;justify-content:space-around;padding:8px 6px 12px;border-top:1px solid var(--line);font-family:var(--f-mono);font-size:8.5px;color:var(--mute)}
+.scr .nav b{color:var(--pcb);font-weight:700}
+.scr .ok{background:var(--pcb-soft);border-left:3px solid var(--pcb);padding:6px 8px;font-size:11.5px}
+.scr .bar{height:6px;background:var(--bg);border-radius:3px;overflow:hidden}.scr .bar i{display:block;height:100%}
+.scr .cert{border:3px double var(--pcb);padding:10px;text-align:center;display:grid;gap:4px}
+@media (prefers-reduced-motion: no-preference){.scr .cam::after{animation:scan 2.2s ease-in-out infinite}}
+@keyframes scan{0%,100%{top:24%}50%{top:72%}}
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
 <div class="wrap">
 
-  <div class="stage" id="stage" aria-label="AI-Box 3B modeli">
+  <div class="stage" id="stage" aria-label="A-MedBox 3B modeli">
     <canvas id="gl" aria-hidden="true"></canvas>
     <div class="callouts" id="callouts"></div>
-    <div class="hud-top"><span id="hudState"><b>AIB-DYB-0142</b> · Kayapınar</span><span id="hudFill" class="mono">34,6 / 40,0 kg</span></div>
+    <div class="hud-top"><span id="hudState"><b>AMB-DYB-0142</b> · Kayapınar</span><span id="hudFill" class="mono">34,6 / 40,0 kg</span></div>
     <div class="toast" id="toast"><small id="toastK">Belediyeye bildirim</small><span id="toastT"></span></div>
     <div class="app off" id="app" aria-live="polite">
-      <div class="app-h"><span>AI-Box uygulaması</span><b id="appK">Tara</b></div>
+      <div class="app-h"><span>A-MedBox uygulaması</span><b id="appK">Tara</b></div>
       <div class="app-steps"><i></i><i></i><i></i><i></i><i></i></div>
       <div class="app-t" id="appT">Atığı kameraya göster</div>
       <div class="app-s" id="appS">Uygulama atığın türünü tanır.</div>
@@ -228,13 +256,14 @@ footer .mono{font-size:11px}
     <header class="top">
       <a class="mark" href="#urun">
         <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="15" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M2 6.5 L12 3 L22 6.5" fill="none" stroke="currentColor" stroke-width="2"/><rect x="7" y="11" width="5" height="5" fill="currentColor"/><path d="M14.5 11.5h3M14.5 14h3M14.5 16.5h2" stroke="currentColor" stroke-width="1.6"/></svg>
-        AI-Box
+        A-MedBox
       </a>
-      <span class="doc">Belge AIB-01 · Rev. C<br>Kavram tasarımı</span>
+      <span class="doc">Belge AMB-01 · Rev. C<br>Kavram tasarımı</span>
     </header>
     <nav class="toc" aria-label="Bölümler"><ol>
       <li><a href="#urun" data-s="urun">Ürün</a></li>
       <li><a href="#akis" data-s="akis">Nasıl çalışır</a></li>
+      <li><a href="#uygulama" data-s="uygulama">Uygulama</a></li>
       <li><a href="#parcalar" data-s="parcalar">Parçalar</a></li>
       <li><a href="#enerji" data-s="enerji">Enerji</a></li>
       <li><a href="#guvenlik" data-s="guvenlik">Güvenlik</a></li>
@@ -246,7 +275,7 @@ footer .mono{font-size:11px}
     <!-- ÜRÜN -->
     <section id="urun" class="hero" data-state="hero">
       <div class="stack-l">
-        <h1>AI<span class="dash">-</span>Box</h1>
+        <h1>A<span class="dash">-</span>Med<br>Box</h1>
         <p class="lead">Elektronik atığı tanıyan, tartan ve dolduğunda belediyeye haber veren toplama kutusu. Haber verirken prize ihtiyaç duymaz; enerjisini güneşte ısınan kendi metal gövdesinden üretir.</p>
         <div class="badge-row">
           <span class="chip">Kapak: <b>yalnız QR ile açılır</b></span>
@@ -301,6 +330,17 @@ footer .mono{font-size:11px}
       </div>
     </section>
 
+
+    <!-- UYGULAMA -->
+    <section id="uygulama" data-state="flow">
+      <div class="stack-l">
+        <div class="sec-h"><span class="ref">S1b</span><span class="kick">Uygulama ekranları</span></div>
+        <h2>Cebindeki A-MedBox</h2>
+        <p>Vatandaş ve kurumların kullandığı uygulamadan ekranlar. Sağa kaydırarak hepsini gör.</p>
+        <div class="shots"><figure class="ph" style="margin:0"><div class="scr"><div class="sb"><span>09:41</span><span>A-MedBox</span><span>%86</span></div><div class="bd"><div class="tt">Atığı tara</div><div class="cam"><div class="obj"></div><span class="tag">Dizüstü · %96</span></div><div class="row"><span>Tahmini ağırlık</span><b>2,10 kg</b></div><div class="row"><span>Tarife</span><b>₺40/kg</b></div><div class="pill">Kutuya git</div></div><nav class="nav"><b>Tara</b><span>Harita</span><span>Cüzdan</span><span>Profil</span></nav></div><figcaption>1 · Atık tarama</figcaption></figure><figure class="ph" style="margin:0"><div class="scr"><div class="sb"><span>09:41</span><span>A-MedBox</span><span>%86</span></div><div class="bd"><div class="tt">Kutunun QR'ı</div><div class="cam"><div class="qrv"></div><span class="tag">AMB-DYB-0142</span></div><div class="ok">Kutu doğrulandı · Kayapınar · 14 m</div><div class="pill">Kapağı aç</div></div><nav class="nav"><b>Tara</b><span>Harita</span><span>Cüzdan</span><span>Profil</span></nav></div><figcaption>2 · Kutu QR okutma</figcaption></figure><figure class="ph" style="margin:0"><div class="scr"><div class="sb"><span>09:41</span><span>A-MedBox</span><span>%86</span></div><div class="bd"><div class="tt">Teşekkürler</div><span class="mute">Bu atıktan kazancın</span><div class="big">₺84,00</div><div class="row"><span>Tartılan</span><b>+2,10 kg</b></div><div class="row"><span>Tanıma eşleşmesi</span><b>Uygun</b></div><div class="row"><span>Kart</span><b>•••• 4821</b></div><div class="pill">Kartıma aktar</div><div class="pill o">Yeni atık tara</div></div><nav class="nav"><span>Tara</span><span>Harita</span><b>Cüzdan</b><span>Profil</span></nav></div><figcaption>3 · Tartı ve kazanç</figcaption></figure><figure class="ph" style="margin:0"><div class="scr"><div class="sb"><span>09:41</span><span>A-MedBox</span><span>%86</span></div><div class="bd"><div class="tt">Kutular</div><div class="map"><i class="pin" style="left:22%;top:18%;background:var(--ok)"></i><i class="pin" style="left:46%;top:44%;background:var(--warn)"></i><i class="pin" style="left:70%;top:62%;background:var(--crit)"></i><i class="pin" style="left:80%;top:12%;background:var(--ok)"></i></div><div class="row"><span>DYB-0142 · 14 m</span><b>%87</b></div><div class="bar"><i style="width:87%;background:var(--warn)"></i></div><div class="row"><span>DYB-0088 · 640 m</span><b>%31</b></div><div class="bar"><i style="width:31%;background:var(--ok)"></i></div><div class="row"><span>DYB-0031 · 1,2 km</span><b>Dolu</b></div></div><nav class="nav"><span>Tara</span><b>Harita</b><span>Cüzdan</span><span>Profil</span></nav></div><figcaption>4 · Yakındaki kutular</figcaption></figure><figure class="ph" style="margin:0"><div class="scr"><div class="sb"><span>09:41</span><span>A-MedBox</span><span>%86</span></div><div class="bd"><div class="tt">Kurum paneli</div><div class="cert"><b style="font-family:var(--f-display);font-size:22px;color:var(--pcb)">YEŞİL SERTİFİKA</b><span class="mute">Kademe II · 2.340 kg</span></div><div class="row"><span>İklim fonu</span><b>Öncelikli</b></div><div class="row"><span>Harç indirimi</span><b>Aktif</b></div><div class="row"><span>Bertaraf ücreti</span><b>Muaf</b></div><span class="mute">Kademe III için 7.660 kg kaldı</span><div class="bar"><i style="width:23%;background:var(--pcb)"></i></div></div><nav class="nav"><span>Tara</span><span>Harita</span><span>Cüzdan</span><b>Profil</b></nav></div><figcaption>5 · Kurum: Yeşil Sertifika</figcaption></figure><figure class="ph" style="margin:0"><div class="scr"><div class="sb"><span>09:41</span><span>A-MedBox</span><span>%86</span></div><div class="bd"><div class="tt">Pikap çağır</div><div class="row"><span>Buzdolabı</span><b>✓</b></div><div class="row"><span>Televizyon</span><b>✓</b></div><div class="row"><span>İlçe</span><b>Kayapınar</b></div><div class="row"><span>Gün</span><b>Yarın 09–12</b></div><div class="ok">Talep PK-4127 alındı. Pikap yolda.</div><div class="pill">Talebi takip et</div><span class="mute">ya da Beyaz Masa 153</span></div><nav class="nav"><b>Tara</b><span>Harita</span><span>Cüzdan</span><span>Profil</span></nav></div><figcaption>6 · Pikap talebi</figcaption></figure></div>
+        <p class="mute" style="font-size:13.5px">Ekranlar tasarım taslağıdır; değerler örnektir.</p>
+      </div>
+    </section>
     <!-- PARÇALAR -->
     <section id="parcalar" data-state="explode">
       <div class="stack-l">
@@ -352,13 +392,13 @@ footer .mono{font-size:11px}
       <div class="stack-l">
         <div class="sec-h"><span class="ref">S4</span><span class="kick">Güvenlik</span></div>
         <h2>Kapak kapalı, kayıt açık</h2>
-        <p>AI-Box'ın kapağı her zaman kilitlidir. QR okutulmadan açılmaz; kimse habersiz içine ulaşamaz. Kutunun tepesindeki küçük kamera kapak her açıldığında ve her zorlamada kısa bir görüntü kaydeder. Sürekli kapalı kapak, yağmur suyunu ve nemi elektronik atıktan uzak tutar.</p>
+        <p>A-MedBox'ın kapağı her zaman kilitlidir. QR okutulmadan açılmaz; kimse habersiz içine ulaşamaz. Kutunun tepesindeki küçük kamera kapak her açıldığında ve her zorlamada kısa bir görüntü kaydeder. Sürekli kapalı kapak, yağmur suyunu ve nemi elektronik atıktan uzak tutar.</p>
         <div class="ctl">
           <div class="btns">
             <button class="btn warn" id="forceBtn" type="button">QR okutmadan açmayı dene</button>
             <button class="btn ghost" id="rainBtn" type="button" aria-pressed="false">Yağmuru başlat</button>
           </div>
-          <div class="ctl-h"><span>Kutu kayıt defteri</span><span>AIB-DYB-0142</span></div>
+          <div class="ctl-h"><span>Kutu kayıt defteri</span><span>AMB-DYB-0142</span></div>
           <div class="log" id="log" aria-live="polite">
             <div class="ok"><b>09:12</b> · QR doğrulandı · kapak açıldı · +0,19 kg</div>
             <div class="ok"><b>11:47</b> · QR doğrulandı · kapak açıldı · +2,10 kg</div>
@@ -473,8 +513,8 @@ footer .mono{font-size:11px}
     </section>
 
     <footer>
-      <span class="mono">AIB-01 · Rev. C · Kavram tasarımı</span>
-      <p>AI-Box bir kavram çalışmasıdır. Tarifeler, eşikler, enerji hesapları ve harita verileri örnektir; pilot uygulamada ölçülerek kesinleşecek.</p>
+      <span class="mono">AMB-01 · Rev. C · Kavram tasarımı</span>
+      <p>A-MedBox bir kavram çalışmasıdır. Tarifeler, eşikler, enerji hesapları ve harita verileri örnektir; pilot uygulamada ölçülerek kesinleşecek.</p>
     </footer>
   </main>
 </div>
@@ -493,7 +533,7 @@ const lerp = (a, b, k) => a + (b - a) * k;
 const ease = k => k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
 
 /* ---------- veriler ---------- */
-const BOX_ID = 'AIB-DYB-0142', LIMIT = 40;
+const BOX_ID = 'AMB-DYB-0142', LIMIT = 40;
 const ITEMS = [
   { id: 'phone',  ad: 'Akıllı telefon',     kg: 0.19, tl: 40, conf: 97 },
   { id: 'laptop', ad: 'Dizüstü bilgisayar', kg: 2.10, tl: 40, conf: 96 },
@@ -514,14 +554,14 @@ const PARTS = [
   { ref: 'ANT1', ad: 'Anten',             is: 'NB-IoT ile belediyeye doluluk bildirimi gönderir.' },
 ];
 const BOXES = [
-  { id: 'AIB-DYB-0142', mah: 'Kayapınar · Diclekent', fill: 34.6, pos: [0, 0] },
-  { id: 'AIB-DYB-0117', mah: 'Kayapınar · Peyas',     fill: 39.2, pos: [6, -6] },
-  { id: 'AIB-DYB-0088', mah: 'Bağlar · Kaynartepe',   fill: 12.4, pos: [-6, -12] },
-  { id: 'AIB-DYB-0031', mah: 'Yenişehir · Ofis',      fill: 40.6, pos: [12, 0] },
-  { id: 'AIB-DYB-0054', mah: 'Sur · Dağkapı',         fill: 8.1,  pos: [-12, 0] },
-  { id: 'AIB-DYB-0069', mah: 'Yenişehir · Huzurevleri', fill: 27.9, pos: [0, -12] },
-  { id: 'AIB-DYB-0103', mah: 'Bağlar · Bağcılar',     fill: 36.8, pos: [-6, 6] },
-  { id: 'AIB-DYB-0126', mah: 'Kayapınar · Fırat',     fill: 19.5, pos: [12, -12] },
+  { id: 'AMB-DYB-0142', mah: 'Kayapınar · Diclekent', fill: 34.6, pos: [0, 0] },
+  { id: 'AMB-DYB-0117', mah: 'Kayapınar · Peyas',     fill: 39.2, pos: [6, -6] },
+  { id: 'AMB-DYB-0088', mah: 'Bağlar · Kaynartepe',   fill: 12.4, pos: [-6, -12] },
+  { id: 'AMB-DYB-0031', mah: 'Yenişehir · Ofis',      fill: 40.6, pos: [12, 0] },
+  { id: 'AMB-DYB-0054', mah: 'Sur · Dağkapı',         fill: 8.1,  pos: [-12, 0] },
+  { id: 'AMB-DYB-0069', mah: 'Yenişehir · Huzurevleri', fill: 27.9, pos: [0, -12] },
+  { id: 'AMB-DYB-0103', mah: 'Bağlar · Bağcılar',     fill: 36.8, pos: [-6, 6] },
+  { id: 'AMB-DYB-0126', mah: 'Kayapınar · Fırat',     fill: 19.5, pos: [12, -12] },
 ];
 
 /* ---------- arayüz durumu ---------- */
@@ -659,7 +699,7 @@ function mats() {
 }
 mats();
 
-/* --- AI-Box --- */
+/* --- A-MedBox --- */
 const W = .9, D = .7, H = 1.15, T = .03, FOOT = .1;
 const BOX = new THREE.Group(); scene.add(BOX);
 const parts = {}; // ref → { g, base, off, mats[] }
@@ -686,9 +726,9 @@ const band = box(W - .08, .52, .006, M.dark); band.position.set(0, FOOT + H - .3
 // logo plakası + WEEE simgesi
 const logoTex = tex(1024, 256, (g, w, h) => {
   g.fillStyle = '#17603f'; g.fillRect(0, 0, w, h);
-  g.fillStyle = '#eef3ef'; g.font = '900 150px "Big Shoulders Display", Impact, sans-serif'; g.textBaseline = 'middle';
-  g.fillText('AI-BOX', 40, h / 2 + 8);
-  const x2 = 40 + g.measureText('AI-BOX').width + 34;
+  g.fillStyle = '#eef3ef'; g.font = '900 132px "Big Shoulders Display", Impact, sans-serif'; g.textBaseline = 'middle';
+  g.fillText('A-MEDBOX', 40, h / 2 + 8);
+  const x2 = 40 + g.measureText('A-MEDBOX').width + 34;
   g.font = '500 26px "Martian Mono", monospace';
   const sub = ['ELEKTRONİK ATIK', 'YALNIZ QR İLE AÇILIR'], sw = Math.max(...sub.map(t => g.measureText(t).width));
   g.save(); g.translate(x2, 0); if (sw > 800 - x2) g.scale((800 - x2) / sw, 1);
@@ -707,7 +747,7 @@ const qrG = part('J1', [0, 0, .32]);
 const qrTex = tex(512, 512, (g, w) => {
   g.fillStyle = '#ffffff'; g.fillRect(0, 0, w, w);
   let n = 25, cell = (q, x, y) => false;
-  try { const q = qrcode(0, 'M'); q.addData('AIBOX:' + BOX_ID); q.make(); n = q.getModuleCount(); cell = (x, y) => q.isDark(y, x); }
+  try { const q = qrcode(0, 'M'); q.addData('AMEDBOX:' + BOX_ID); q.make(); n = q.getModuleCount(); cell = (x, y) => q.isDark(y, x); }
   catch (e) { const r = (x, y) => ((x * 73856093) ^ (y * 19349663)) % 7 < 3; cell = r; }
   const pad = 40, s = (w - pad * 2) / n; g.fillStyle = '#0d1411';
   for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) if (cell(x, y)) g.fillRect(pad + x * s, pad + y * s, Math.ceil(s), Math.ceil(s));
@@ -1151,7 +1191,7 @@ api.drop = async (it) => {
   if (kg >= LIMIT && !full) {
     full = true;
     await wait(.6);
-    appShow(4, 'Bildirim', 'Kutu doldu, belediyeye haber verildi', 'En yakın boş kutu: AIB-DYB-0088 · 640 m');
+    appShow(4, 'Bildirim', 'Kutu doldu, belediyeye haber verildi', 'En yakın boş kutu: AMB-DYB-0088 · 640 m');
     drawLCD(kg, true); waveOn = 3.5;
     toast('Belediyeye bildirim', `${BOX_ID} dolu (${fmt(kg)} kg). Boşaltma ekibi sıraya alındı.`);
     addLog('Eşik aşıldı · belediyeye bildirim gönderildi', false);

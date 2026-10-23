@@ -6,7 +6,7 @@ Bazalt taşının gündüz ısısı ile toprağın serinliği arasındaki farkta
 |---|---|---|
 | v1 | `/` | Kaydırmalı 3B sensör dünyası |
 | v2 | `/v2/` | Diyarbakır panoraması (2.5B), kuraklık canlandırması, taşa dalış, enerji simülatörü; Tarım (çiftçi telefonu + toprak dilimi: su, karbon, organik madde, azot), Kuyu, Hevsel, Dicle (kirlilik, temizlik, alg), Fabrika (toksik profil, arke önerisi), Dağkapı (gece merdiven/yol ışıkları, taş sağlık kartı), Atık (akıllı kutu, rota), uyarı motoru, pilot planı |
-| AI-Box | `/ai-box/` | Akıllı e-atık toplama kutusu: 3B kutu, tara-okut-bırak simülasyonu, patlatılmış parça görünümü, ısıdan enerji, güvenlik (kamera, kilitli kapak, yağmur), şahıs/kurum teşviki (Yeşil Sertifika), belediye haritası, pikap talebi |
+| A-MedBox | `/ai-box/` | Akıllı e-atık toplama kutusu: 3B kutu, uygulama ekranları, tara-okut-bırak simülasyonu, patlatılmış parça görünümü, ısıdan enerji, güvenlik (kamera, kilitli kapak, yağmur), şahıs/kurum teşviki (Yeşil Sertifika), belediye haritası, pikap talebi |
 
 Canlı: https://emrecanbhr21ecb-crypto.github.io/ta-nab-z/ ve https://emrecanbhr21ecb-crypto.github.io/ta-nab-z/v2/
 
@@ -16,7 +16,7 @@ Canlı: https://emrecanbhr21ecb-crypto.github.io/ta-nab-z/ ve https://emrecanbhr
 git clone https://github.com/emrecanbhr21ecb-crypto/ta-nab-z.git
 cd ta-nab-z
 python3 -m http.server 8000
-# v1: http://localhost:8000   v2: http://localhost:8000/v2/   AI-Box: http://localhost:8000/ai-box/
+# v1: http://localhost:8000   v2: http://localhost:8000/v2/   A-MedBox: http://localhost:8000/ai-box/
 ```
 
 v2 katman ve görsel listelerini `fetch` ile okuduğu için dosyayı çift tıklayarak değil, yukarıdaki gibi bir sunucuyla aç.
