@@ -1,0 +1,1433 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AI-Box</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="AI-Box: elektronik atığı tanıyan, tartan ve dolunca belediyeye kendi ısısından ürettiği enerjiyle haber veren akıllı toplama kutusu.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800;900&family=Figtree:wght@400;500;600;700&family=Martian+Mono:wght@400;500;700&display=swap">
+<style>
+/* Layout: ürün "datasheet"i gibi okunan sol sütun + sağda yapışkan, elle döndürülen ve çalıştırılabilen 3B tezgâh.
+   Telefonda tezgâh üstte yapışık kalır, sayfa altından akar. Dünya: galvaniz sac, devre kartı yeşili, bakır iz. */
+:root{
+  --bg:#e8ebe6;           /* galvaniz kâğıt */
+  --surface:#f5f6f2;
+  --ink:#14201b;
+  --mute:#56635d;
+  --line:rgba(20,32,27,.16);
+  --pcb:#17603f;          /* devre kartı yeşili — vurgu */
+  --pcb-soft:rgba(23,96,63,.10);
+  --copper:#a8521c;       /* bakır iz — ikinci vurgu, ölçüler */
+  --ok:#2c8a4c; --warn:#b97c0c; --crit:#bf3c28;
+  --ground:#d6dbd3;       /* 3B zemin */
+  --steel:#a3aca8;        /* 3B gövde */
+  --road:#c7cdc5;
+  --f-display:"Big Shoulders Display","Arial Narrow","Roboto Condensed",Impact,sans-serif;
+  --f-body:"Figtree","Segoe UI","Helvetica Neue",Arial,sans-serif;
+  --f-mono:"Martian Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0c1512; --surface:#121e1a; --ink:#e1e9e3; --mute:#8d9c95; --line:rgba(225,233,227,.14);
+  --pcb:#4cc38a; --pcb-soft:rgba(76,195,138,.12); --copper:#e48a4e;
+  --ok:#56c27f; --warn:#e2aa3d; --crit:#ee6c54;
+  --ground:#14211c; --steel:#7f8a86; --road:#1d2c26; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#0c1512; --surface:#121e1a; --ink:#e1e9e3; --mute:#8d9c95; --line:rgba(225,233,227,.14);
+  --pcb:#4cc38a; --pcb-soft:rgba(76,195,138,.12); --copper:#e48a4e;
+  --ok:#56c27f; --warn:#e2aa3d; --crit:#ee6c54;
+  --ground:#14211c; --steel:#7f8a86; --road:#1d2c26; color-scheme:dark }
+
+*{box-sizing:border-box}
+html,body{background:var(--bg);color:var(--ink)}
+body{margin:0;font-family:var(--f-body);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased}
+a{color:var(--pcb)}
+:focus-visible{outline:2px solid var(--copper);outline-offset:2px}
+
+.wrap{display:grid;grid-template-columns:minmax(0,600px) minmax(0,1fr);min-height:100%}
+.stage{grid-column:2;grid-row:1;position:sticky;top:0;height:100vh;height:100svh;overflow:hidden;border-left:1px solid var(--line)}
+.col{grid-column:1;grid-row:1;min-width:0;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(28px, env(safe-area-inset-right, 0px));padding-block:0 64px}
+@media (min-width:1001px){.col{padding-left:max(40px, env(safe-area-inset-left, 0px))}}
+@media (max-width:1000px){
+  .wrap{display:block}
+  .stage{height:46svh;height:46vh;border-left:0;border-bottom:1px solid var(--line);z-index:5;background:var(--bg)}
+  @supports (height:1svh){.stage{height:46svh}}
+  .col{padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+}
+#gl{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:pan-y;cursor:grab}
+#gl:active{cursor:grabbing}
+
+/* tezgâh üstü yazılar */
+.hud-top{position:absolute;left:16px;top:calc(14px + env(safe-area-inset-top,0px));right:16px;display:flex;justify-content:space-between;gap:12px;pointer-events:none;font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;color:var(--mute)}
+.hud-top b{color:var(--ink);font-weight:500}
+.hud-hint{position:absolute;right:max(16px, env(safe-area-inset-right,0px));bottom:14px;font-family:var(--f-mono);font-size:10.5px;color:var(--mute);pointer-events:none}
+.callouts{position:absolute;inset:0;pointer-events:none}
+.callout{position:absolute;left:0;top:0;font-family:var(--f-mono);font-size:10.5px;white-space:nowrap;display:flex;align-items:center;gap:6px;opacity:0;transition:opacity .3s}
+.callout i{width:7px;height:7px;background:var(--copper);border-radius:50%;flex:none}
+.callout span{background:var(--surface);border:1px solid var(--line);padding:3px 6px;color:var(--ink)}
+.callout span b{color:var(--copper);font-weight:700;margin-right:5px}
+.callout.hi span{border-color:var(--copper);background:var(--copper);color:var(--surface)}
+.callout.hi span b{color:var(--surface)}
+
+/* uygulama ekranı (tezgâhta) */
+.app{position:absolute;left:max(16px, env(safe-area-inset-left,0px));bottom:16px;width:min(272px, calc(100% - 32px));background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:grid;gap:6px;box-shadow:0 10px 30px -18px rgba(0,0,0,.5);transition:opacity .3s, transform .3s}
+.app.off{opacity:0;transform:translateY(8px);pointer-events:none}
+.app-h{display:flex;justify-content:space-between;align-items:center;font-family:var(--f-mono);font-size:10px;color:var(--mute);letter-spacing:.06em;text-transform:uppercase}
+.app-h b{color:var(--pcb);font-weight:700}
+.app-t{font-weight:700;font-size:15px;line-height:1.25}
+.app-s{font-size:13px;color:var(--mute)}
+.app-steps{display:flex;gap:4px}
+.app-steps i{flex:1;height:3px;background:var(--line);border-radius:2px;transition:background .3s}
+.app-steps i.on{background:var(--pcb)}
+@media (max-width:1000px){.app{bottom:10px;padding:9px 12px;gap:4px}.app-t{font-size:14px}.app-s{font-size:12px}.hud-hint{display:none}}
+
+.toast{position:absolute;right:max(16px, env(safe-area-inset-right,0px));top:calc(42px + env(safe-area-inset-top,0px));width:min(300px, calc(100% - 32px));background:var(--crit);color:#fff;border-radius:10px;padding:10px 12px;font-size:13px;line-height:1.35;display:grid;gap:2px;transform:translateY(-8px);opacity:0;transition:opacity .35s, transform .35s;pointer-events:none}
+.toast.on{opacity:1;transform:none}
+.toast.ok{background:var(--pcb);color:var(--surface)}
+.toast small{font-family:var(--f-mono);font-size:10px;letter-spacing:.06em;opacity:.85;text-transform:uppercase}
+.nogl{position:absolute;inset:0;display:none;place-items:center;padding:24px;text-align:center;color:var(--mute);font-size:14px}
+body.no-gl .nogl{display:grid}
+
+/* sol sütun */
+.top{display:flex;align-items:center;gap:14px;padding-block:22px 0;font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;color:var(--mute)}
+.mark{display:inline-flex;align-items:center;gap:8px;color:var(--ink);font-weight:700;text-decoration:none}
+.mark svg{width:22px;height:22px}
+.top .doc{margin-left:auto;text-align:right}
+nav.toc{margin-top:14px;overflow-x:auto;scrollbar-width:none;border-block:1px solid var(--line)}
+nav.toc::-webkit-scrollbar{display:none}
+nav.toc ol{list-style:none;margin:0;padding:0;display:flex;gap:2px;white-space:nowrap}
+nav.toc a{display:block;padding:9px 8px;font-family:var(--f-mono);font-size:11px;color:var(--mute);text-decoration:none;border-bottom:2px solid transparent}
+nav.toc a.on{color:var(--ink);border-bottom-color:var(--pcb)}
+nav.toc a:hover{color:var(--ink)}
+
+section{padding-block:56px 8px;scroll-margin-top:20px}
+@media (max-width:1000px){section{scroll-margin-top:calc(46svh + 10px)}}
+.sec-h{display:flex;align-items:baseline;gap:12px;margin-bottom:14px}
+.sec-h .ref{font-family:var(--f-mono);font-size:11px;color:var(--copper);border:1px solid currentColor;padding:2px 6px;letter-spacing:.04em}
+.sec-h .kick{font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute)}
+h1,h2,h3{font-family:var(--f-display);margin:0;text-wrap:balance;letter-spacing:.005em}
+h1{font-size:clamp(104px, 15vw, 172px);font-weight:900;line-height:.82;letter-spacing:-.01em;text-transform:uppercase}
+h1 .dash{color:var(--pcb)}
+h2{font-size:clamp(38px, 5.4vw, 58px);font-weight:800;line-height:.95;text-transform:uppercase}
+h3{font-size:22px;font-weight:800;line-height:1.05;text-transform:uppercase;letter-spacing:.02em}
+p{margin:0;max-width:62ch}
+.lead{font-size:19px;line-height:1.45;max-width:34ch;font-weight:500}
+.mute{color:var(--mute)}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.stack{display:grid;gap:14px}
+.stack-l{display:grid;gap:22px}
+.hero{padding-block:42px 12px}
+.hero .stack-l{gap:26px}
+.badge-row{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font-family:var(--f-mono);font-size:10.5px;padding:4px 8px;border:1px solid var(--line);color:var(--mute);background:var(--surface)}
+.chip b{color:var(--ink);font-weight:500}
+
+/* datasheet tablosu */
+.tbl-wrap{overflow-x:auto;border-top:2px solid var(--ink)}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:8px 10px 8px 0;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--f-mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);font-weight:500}
+td.num,th.num{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums;font-size:12.5px;padding-right:16px;white-space:nowrap}
+td .refc{font-family:var(--f-mono);font-size:11.5px;color:var(--copper);font-weight:700}
+tr.part{cursor:pointer}
+tr.part:hover td,tr.part.hi td{background:var(--pcb-soft)}
+tr.part td:first-child{padding-left:6px}
+
+/* süreç */
+ol.flow{list-style:none;margin:0;padding:0;display:grid;gap:0;counter-reset:f}
+ol.flow li{display:grid;grid-template-columns:34px minmax(0,1fr);gap:12px;padding:12px 0;border-bottom:1px solid var(--line);counter-increment:f;transition:background .3s}
+ol.flow li::before{content:counter(f);font-family:var(--f-display);font-weight:900;font-size:30px;line-height:1;color:var(--line);transition:color .3s}
+ol.flow li.on::before{color:var(--pcb)}
+ol.flow li b{display:block;font-weight:700}
+ol.flow li span{color:var(--mute);font-size:14.5px}
+
+/* kontroller */
+.ctl{background:var(--surface);border:1px solid var(--line);padding:16px;display:grid;gap:14px}
+.ctl-h{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);display:flex;justify-content:space-between;gap:10px}
+.items{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:6px}
+.item{appearance:none;border:1px solid var(--line);background:var(--bg);color:var(--ink);padding:9px 10px;text-align:left;font:inherit;font-size:13.5px;cursor:pointer;display:grid;gap:2px;border-radius:0}
+.item small{font-family:var(--f-mono);font-size:10px;color:var(--mute)}
+.item[aria-pressed="true"]{border-color:var(--pcb);box-shadow:inset 0 0 0 1px var(--pcb);background:var(--pcb-soft)}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+.btn{appearance:none;border:0;background:var(--pcb);color:var(--surface);font:inherit;font-weight:700;font-size:14.5px;padding:11px 16px;cursor:pointer;border-radius:999px;display:inline-flex;align-items:center;gap:8px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
+.btn.warn{background:var(--crit);color:#fff}
+.readout{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line)}
+.readout div{background:var(--surface);padding:10px;display:grid;gap:2px;min-width:0}
+.readout small{font-family:var(--f-mono);font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}
+.readout b{font-family:var(--f-display);font-weight:800;font-size:28px;line-height:1;font-variant-numeric:tabular-nums}
+.readout b.copper{color:var(--copper)}
+.meter{height:10px;background:var(--bg);border:1px solid var(--line);position:relative;overflow:hidden}
+.meter i{position:absolute;inset:0 auto 0 0;background:var(--ok);transition:width .5s, background .3s}
+.meter .thr{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink);left:100%}
+@media (max-width:440px){.readout{grid-template-columns:repeat(2,minmax(0,1fr))}.readout b{font-size:24px}}
+
+.range{display:grid;gap:6px}
+.range label{display:flex;justify-content:space-between;font-size:14px;gap:10px}
+.range label b{font-family:var(--f-mono);font-size:13px}
+input[type=range]{width:100%;accent-color:var(--pcb)}
+.seg{display:inline-flex;border:1px solid var(--line);padding:3px;border-radius:999px;background:var(--bg)}
+.seg button{appearance:none;border:0;background:transparent;color:var(--mute);font:inherit;font-weight:600;font-size:14px;padding:8px 16px;border-radius:999px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.log{font-family:var(--f-mono);font-size:11.5px;display:grid;gap:4px;max-height:120px;overflow:auto;color:var(--mute)}
+.log div b{color:var(--crit);font-weight:500}
+.log div.ok b{color:var(--ok)}
+
+.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media (max-width:520px){.two{grid-template-columns:1fr}}
+.panel{border:1px solid var(--line);padding:16px;display:grid;gap:10px;align-content:start;background:var(--surface);min-width:0}
+.panel.sel{border-color:var(--pcb);box-shadow:inset 0 0 0 1px var(--pcb)}
+.panel ul{margin:0;padding-left:18px;display:grid;gap:4px;font-size:14.5px}
+.tier{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.tier div{border:1px solid var(--line);padding:8px;display:grid;gap:2px;background:var(--bg)}
+.tier small{font-family:var(--f-mono);font-size:9.5px;color:var(--mute);text-transform:uppercase;letter-spacing:.06em}
+.tier b{font-family:var(--f-display);font-weight:800;font-size:20px}
+
+.status{display:inline-flex;align-items:center;gap:6px;font-family:var(--f-mono);font-size:11px}
+.status i{width:8px;height:8px;border-radius:50%;background:var(--ok)}
+.status.w i{background:var(--warn)} .status.c i{background:var(--crit)}
+
+form.pick{display:grid;gap:12px}
+.field{display:grid;gap:5px;font-size:14px}
+.field select,.field input{font:inherit;font-size:15px;padding:10px 12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:0;width:100%;min-width:0}
+.checks{display:flex;flex-wrap:wrap;gap:6px}
+.checks label{display:inline-flex;gap:6px;align-items:center;border:1px solid var(--line);padding:7px 10px;font-size:14px;background:var(--bg);cursor:pointer}
+.checks input{accent-color:var(--pcb)}
+.phone{display:flex;flex-wrap:wrap;align-items:center;gap:10px;border:1px dashed var(--line);padding:12px}
+.phone b{font-family:var(--f-display);font-size:34px;font-weight:900;line-height:1;user-select:all}
+.confirm{border-left:3px solid var(--pcb);padding:10px 12px;background:var(--pcb-soft);font-size:14.5px}
+
+footer{padding-block:56px 10px;display:grid;gap:12px;font-size:13.5px;color:var(--mute);border-top:2px solid var(--ink);margin-top:56px}
+footer .mono{font-size:11px}
+
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="stage" id="stage" aria-label="AI-Box 3B modeli">
+    <canvas id="gl" aria-hidden="true"></canvas>
+    <div class="callouts" id="callouts"></div>
+    <div class="hud-top"><span id="hudState"><b>AIB-DYB-0142</b> · Kayapınar</span><span id="hudFill" class="mono">34,6 / 40,0 kg</span></div>
+    <div class="toast" id="toast"><small id="toastK">Belediyeye bildirim</small><span id="toastT"></span></div>
+    <div class="app off" id="app" aria-live="polite">
+      <div class="app-h"><span>AI-Box uygulaması</span><b id="appK">Tara</b></div>
+      <div class="app-steps"><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="app-t" id="appT">Atığı kameraya göster</div>
+      <div class="app-s" id="appS">Uygulama atığın türünü tanır.</div>
+    </div>
+    <div class="hud-hint">Sürükle: döndür</div>
+    <div class="nogl">Tarayıcın 3B görüntüyü açamadı. Metin ve tablolar yine de okunabilir.</div>
+  </div>
+
+  <main class="col">
+    <header class="top">
+      <a class="mark" href="#urun">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="15" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M2 6.5 L12 3 L22 6.5" fill="none" stroke="currentColor" stroke-width="2"/><rect x="7" y="11" width="5" height="5" fill="currentColor"/><path d="M14.5 11.5h3M14.5 14h3M14.5 16.5h2" stroke="currentColor" stroke-width="1.6"/></svg>
+        AI-Box
+      </a>
+      <span class="doc">Belge AIB-01 · Rev. C<br>Kavram tasarımı</span>
+    </header>
+    <nav class="toc" aria-label="Bölümler"><ol>
+      <li><a href="#urun" data-s="urun">Ürün</a></li>
+      <li><a href="#akis" data-s="akis">Nasıl çalışır</a></li>
+      <li><a href="#parcalar" data-s="parcalar">Parçalar</a></li>
+      <li><a href="#enerji" data-s="enerji">Enerji</a></li>
+      <li><a href="#guvenlik" data-s="guvenlik">Güvenlik</a></li>
+      <li><a href="#tesvik" data-s="tesvik">Teşvik</a></li>
+      <li><a href="#belediye" data-s="belediye">Belediye</a></li>
+      <li><a href="#pikap" data-s="pikap">Pikap</a></li>
+    </ol></nav>
+
+    <!-- ÜRÜN -->
+    <section id="urun" class="hero" data-state="hero">
+      <div class="stack-l">
+        <h1>AI<span class="dash">-</span>Box</h1>
+        <p class="lead">Elektronik atığı tanıyan, tartan ve dolduğunda belediyeye haber veren toplama kutusu. Haber verirken prize ihtiyaç duymaz; enerjisini güneşte ısınan kendi metal gövdesinden üretir.</p>
+        <div class="badge-row">
+          <span class="chip">Kapak: <b>yalnız QR ile açılır</b></span>
+          <span class="chip">Dış enerji: <b>0 W</b></span>
+          <span class="chip">Kamera: <b>1 adet</b></span>
+          <span class="chip">Bildirim eşiği: <b>40 kg</b></span>
+        </div>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Parametre</th><th class="num">Değer</th><th>Not</th></tr></thead>
+          <tbody>
+            <tr><td>Gövde ölçüsü (G × D × Y)</td><td class="num">900 × 700 × 1250 mm</td><td class="mute">galvaniz çelik, toz boya</td></tr>
+            <tr><td>Hazne hacmi</td><td class="num">≈ 0,62 m³</td><td class="mute">tek bölme</td></tr>
+            <tr><td>Bildirim eşiği</td><td class="num">40,0 kg</td><td class="mute">belediye değiştirebilir</td></tr>
+            <tr><td>Tartı çözünürlüğü</td><td class="num">10 g</td><td class="mute">4 noktalı yük hücresi</td></tr>
+            <tr><td>Isıl üreteç</td><td class="num">8 modül</td><td class="mute">güneşli gün ≈ 0,4–0,9 W tepe</td></tr>
+            <tr><td>Depolama</td><td class="num">2 × 100 F</td><td class="mute">süperkapasitör, pil yok</td></tr>
+          </tbody>
+        </table></div>
+        <p class="mute" style="font-size:13.5px">Tablodaki değerler kavram aşamasındaki hedeflerdir; prototipte ölçülerek güncellenecek.</p>
+      </div>
+    </section>
+
+    <!-- AKIŞ -->
+    <section id="akis" data-state="flow">
+      <div class="stack-l">
+        <div class="sec-h"><span class="ref">S1</span><span class="kick">Nasıl çalışır</span></div>
+        <h2>Tara, okut, bırak</h2>
+        <p>Vatandaş atığını kutuya atmadan önce uygulamayla tarar. Sonra kutunun önündeki QR'ı okutur. Kapak yalnızca o an açılır, atık tartılır ve kazanç hesaba geçer.</p>
+        <ol class="flow" id="flowList">
+          <li><div><b>Atığı tara</b><span>Uygulamadaki yapay zekâ atığın türünü tanır: telefon, pil, kablo, dizüstü…</span></div></li>
+          <li><div><b>Kutunun QR'ını okut</b><span>QR kutunun kimliği ve konumudur. Atık hangi kutuya gidiyor, kayıt ona yazılır.</span></div></li>
+          <li><div><b>Kapak açılır, atığı bırak</b><span>Kilit yalnızca doğrulanmış bir okutmada çözülür.</span></div></li>
+          <li><div><b>Kutu tartar</b><span>Yük hücresi eklenen ağırlığı ölçer, uygulamadaki tanıma ile karşılaştırır.</span></div></li>
+          <li><div><b>Dolunca belediyeye haber</b><span>Eşik aşılınca kutu boşaltma bildirimi gönderir.</span></div></li>
+        </ol>
+
+        <div class="ctl" id="sim">
+          <div class="ctl-h"><span>Dene: bir atık seç</span><span>örnek tarife</span></div>
+          <div class="items" id="items" role="group" aria-label="Atık seç"></div>
+          <div class="btns">
+            <button class="btn" id="dropBtn" type="button">Tara ve kutuya at</button>
+            <button class="btn ghost" id="emptyBtn" type="button">Kutuyu boşalt</button>
+          </div>
+          <div class="readout">
+            <div><small>Kutudaki atık</small><b id="rKg">34,6</b><span class="mono mute" style="font-size:11px">kg / 40,0</span></div>
+            <div><small>Son atık</small><b id="rLast">—</b><span class="mono mute" style="font-size:11px" id="rLastS">kg</span></div>
+            <div><small>Kazancın</small><b class="copper" id="rEarn">₺0,00</b><span class="mono mute" style="font-size:11px">bu oturum</span></div>
+          </div>
+          <div class="meter" aria-hidden="true"><i id="meter" style="width:86.5%"></i></div>
+          <p class="mute" style="font-size:13px" id="simNote">Kutu örnek olarak 34,6 kg dolu başlıyor. Birkaç dizüstü bilgisayar eşiği aşar.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- PARÇALAR -->
+    <section id="parcalar" data-state="explode">
+      <div class="stack-l">
+        <div class="sec-h"><span class="ref">S2</span><span class="kick">Patlatılmış görünüm</span></div>
+        <h2>Kutunun içinde ne var</h2>
+        <p>Her parçanın bir referans kodu var, devre şemalarında olduğu gibi. Satırın üstüne gel ya da dokun; parça modelde işaretlenir.</p>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Ref</th><th>Parça</th><th>Görevi</th></tr></thead>
+          <tbody id="parts"></tbody>
+        </table></div>
+      </div>
+    </section>
+
+    <!-- ENERJİ -->
+    <section id="enerji" data-state="thermal">
+      <div class="stack-l">
+        <div class="sec-h"><span class="ref">S3</span><span class="kick">Enerji</span></div>
+        <h2>Güneşin ısıttığı metal, haber veren kutu</h2>
+        <p>Metal gövde gün boyu güneşte ısınır. Gölgedeki kanatçıklar ve zemine oturan taban daha serin kalır. Aradaki sıcaklık farkı, ısıl üreteç modüllerinde (Seebeck etkisi) elektriğe dönüşür ve süperkapasitörde birikir. Tartı, kamera ve bildirim bu enerjiyle çalışır.</p>
+        <div class="ctl">
+          <div class="range">
+            <label for="hour"><span>Günün saati</span><b id="hourV">13:00</b></label>
+            <input type="range" id="hour" min="5" max="23" step="0.25" value="13">
+          </div>
+          <div class="readout">
+            <div><small>Gövde</small><b id="tHot">52°</b><span class="mono mute" style="font-size:11px">sıcak yüz</span></div>
+            <div><small>Kanatçık</small><b id="tCold">31°</b><span class="mono mute" style="font-size:11px">soğuk yüz</span></div>
+            <div><small>Üretilen</small><b class="copper" id="pNow">0,62</b><span class="mono mute" style="font-size:11px">W, 8 modül</span></div>
+          </div>
+          <div class="ctl-h"><span>Süperkapasitör dolumu</span><span id="capV" class="mono">%64</span></div>
+          <div class="meter"><i id="capM" style="width:64%;background:var(--copper)"></i></div>
+          <p style="font-size:14.5px" id="eNote">Bu saate kadar biriken enerji ≈ 1.900 bildirime yeter.</p>
+        </div>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>İş</th><th class="num">Enerji</th><th>Ne zaman</th></tr></thead>
+          <tbody>
+            <tr><td>Tartı okuması</td><td class="num">0,05 J</td><td class="mute">kapak her kapandığında</td></tr>
+            <tr><td>Kamera kaydı</td><td class="num">1,8 J</td><td class="mute">kapak açılınca, deneme olunca</td></tr>
+            <tr><td>Doluluk bildirimi (NB-IoT)</td><td class="num">0,6 J</td><td class="mute">eşik aşılınca</td></tr>
+            <tr><td>Günlük sağlık sinyali</td><td class="num">0,6 J</td><td class="mute">günde bir</td></tr>
+          </tbody>
+        </table></div>
+        <p class="mute" style="font-size:13.5px">Hesap kavram düzeyindedir: modül başına 0,05 V/K, 2 Ω iç direnç ve %35 ısıl kayıp varsayıldı. Gece gövde zeminden hızlı soğur; fark tersine döner ve az da olsa üretim sürer.</p>
+      </div>
+    </section>
+
+    <!-- GÜVENLİK -->
+    <section id="guvenlik" data-state="security">
+      <div class="stack-l">
+        <div class="sec-h"><span class="ref">S4</span><span class="kick">Güvenlik</span></div>
+        <h2>Kapak kapalı, kayıt açık</h2>
+        <p>AI-Box'ın kapağı her zaman kilitlidir. QR okutulmadan açılmaz; kimse habersiz içine ulaşamaz. Kutunun tepesindeki küçük kamera kapak her açıldığında ve her zorlamada kısa bir görüntü kaydeder. Sürekli kapalı kapak, yağmur suyunu ve nemi elektronik atıktan uzak tutar.</p>
+        <div class="ctl">
+          <div class="btns">
+            <button class="btn warn" id="forceBtn" type="button">QR okutmadan açmayı dene</button>
+            <button class="btn ghost" id="rainBtn" type="button" aria-pressed="false">Yağmuru başlat</button>
+          </div>
+          <div class="ctl-h"><span>Kutu kayıt defteri</span><span>AIB-DYB-0142</span></div>
+          <div class="log" id="log" aria-live="polite">
+            <div class="ok"><b>09:12</b> · QR doğrulandı · kapak açıldı · +0,19 kg</div>
+            <div class="ok"><b>11:47</b> · QR doğrulandı · kapak açıldı · +2,10 kg</div>
+          </div>
+        </div>
+        <div class="tbl-wrap"><table>
+          <tbody>
+            <tr><td>Kamera ne zaman kaydeder</td><td class="mute">Yalnız kapak açılırken ve zorlama sezildiğinde; sürekli yayın yapmaz.</td></tr>
+            <tr><td>Kayıtlar nerede durur</td><td class="mute">Kutuda şifreli; yalnız olay bildirimiyle belediyeye gider.</td></tr>
+            <tr><td>Yüz bulanıklaştırma</td><td class="mute">Görüntü kutudan çıkmadan önce yüzler bulanıklaşır (KVKK).</td></tr>
+            <tr><td>Su geçirmezlik hedefi</td><td class="mute">IP54, kapak eğimli ve taşkın kenarlı.</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+    </section>
+
+    <!-- TEŞVİK -->
+    <section id="tesvik" data-state="reward">
+      <div class="stack-l">
+        <div class="sec-h"><span class="ref">S5</span><span class="kick">Teşvik</span></div>
+        <h2>Atık kazandırır</h2>
+        <p>Teşvik ikiye ayrılır. Şahıslar atığın karşılığını para olarak alır. Kurumlar ise topladıkları e-atıkla Yeşil Sertifika kazanır.</p>
+        <div class="seg" role="group" aria-label="Teşvik türü">
+          <button type="button" id="segP" aria-pressed="true">Şahıs</button>
+          <button type="button" id="segK" aria-pressed="false">Kurum</button>
+        </div>
+        <div class="two">
+          <div class="panel sel" id="panP">
+            <h3>Şahıs</h3>
+            <p style="font-size:14.5px">Kutudaki temassız okuyucuya banka ya da kredi kartını okut. Atığın tartılan ağırlığına göre kazanç kartına aktarılır.</p>
+            <ul>
+              <li>Kart bilgisi kutuda saklanmaz</li>
+              <li>Ağırlık ve tür, tanıma ile eşleşmezse ödeme beklemeye alınır</li>
+              <li>Aylık üst sınır kötüye kullanımı önler</li>
+            </ul>
+          </div>
+          <div class="panel" id="panK">
+            <h3>Kurum</h3>
+            <p style="font-size:14.5px">Okul, fabrika, hastane ve şirketler topladıkları atıkla Yeşil Sertifika alır.</p>
+            <ul>
+              <li>İklim fonlarında öncelik</li>
+              <li>Harçlarda indirim</li>
+              <li>Atık bertaraf ücretinden muafiyet</li>
+            </ul>
+          </div>
+        </div>
+        <div id="tarife">
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>Atık grubu</th><th class="num">Örnek tarife</th><th>Neden</th></tr></thead>
+            <tbody>
+              <tr><td>Telefon, tablet, dizüstü</td><td class="num">₺40 / kg</td><td class="mute">altın, gümüş, bakır içerir</td></tr>
+              <tr><td>Kablo ve şarj aleti</td><td class="num">₺25 / kg</td><td class="mute">bakır</td></tr>
+              <tr><td>Pil ve batarya</td><td class="num">₺15 / kg</td><td class="mute">lityum, kobalt; doğaya karışırsa zehirli</td></tr>
+              <tr><td>Ampul, LED, küçük ev aleti</td><td class="num">₺8 / kg</td><td class="mute">cıva ve plastik ayrıştırma</td></tr>
+            </tbody>
+          </table></div>
+        </div>
+        <div id="sertifika" hidden>
+          <div class="tier">
+            <div><small>Yeşil · I</small><b>500 kg</b><span class="mute" style="font-size:12.5px">yıllık</span></div>
+            <div><small>Yeşil · II</small><b>2 t</b><span class="mute" style="font-size:12.5px">yıllık</span></div>
+            <div><small>Yeşil · III</small><b>10 t</b><span class="mute" style="font-size:12.5px">yıllık</span></div>
+          </div>
+          <p class="mute" style="font-size:13.5px;margin-top:10px">Kademe arttıkça harç indirimi ve fon önceliği büyür. Eşikler örnektir; belediye meclisi kararıyla belirlenir.</p>
+        </div>
+        <div class="btns"><button class="btn" id="rewardBtn" type="button">Kartı okut</button></div>
+      </div>
+    </section>
+
+    <!-- BELEDİYE -->
+    <section id="belediye" data-state="city">
+      <div class="stack-l">
+        <div class="sec-h"><span class="ref">S6</span><span class="kick">Belediye görünümü</span></div>
+        <h2>Dolu kutu, kısa rota</h2>
+        <p>Belediye her kutunun doluluğunu haritada görür. Ekip sabit bir turla değil, yalnızca dolan kutulara gider. Boş kutu için yakıt ve mesai harcanmaz.</p>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Kutu</th><th>Mahalle</th><th class="num">Doluluk</th><th>Durum</th></tr></thead>
+          <tbody id="boxes"></tbody>
+        </table></div>
+        <p class="mute" style="font-size:13.5px">Konumlar ve doluluklar örnektir.</p>
+      </div>
+    </section>
+
+    <!-- PİKAP -->
+    <section id="pikap" data-state="pickup">
+      <div class="stack-l">
+        <div class="sec-h"><span class="ref">S7</span><span class="kick">Büyük atık</span></div>
+        <h2>Kutuya sığmıyorsa pikap gelir</h2>
+        <p>Buzdolabı, çamaşır makinesi, televizyon gibi büyük e-atıklar kutuya girmez. Belediyeyi arayarak ya da uygulamadan talep açarak evine pikap tahsis ettirebilirsin.</p>
+        <div class="phone"><span class="mute" style="font-size:14px">Beyaz Masa</span><b>153</b><button class="btn ghost" type="button" id="copyBtn">Numarayı kopyala</button></div>
+        <form class="pick ctl" id="pickForm">
+          <div class="ctl-h"><span>Pikap talebi</span><span>örnek form</span></div>
+          <div class="checks" role="group" aria-label="Atık türü">
+            <label><input type="checkbox" id="pk1" checked> Buzdolabı</label>
+            <label><input type="checkbox" id="pk2"> Çamaşır makinesi</label>
+            <label><input type="checkbox" id="pk3" checked> Televizyon</label>
+            <label><input type="checkbox" id="pk4"> Klima</label>
+            <label><input type="checkbox" id="pk5"> Bilgisayar kasası</label>
+          </div>
+          <div class="two">
+            <label class="field" for="pkDist">İlçe
+              <select id="pkDist"><option>Kayapınar</option><option>Bağlar</option><option>Yenişehir</option><option>Sur</option></select>
+            </label>
+            <label class="field" for="pkDay">Gün
+              <select id="pkDay"><option>Yarın, 09:00–12:00</option><option>Yarın, 13:00–17:00</option><option>Cumartesi, 10:00–14:00</option></select>
+            </label>
+          </div>
+          <div class="btns"><button class="btn" type="submit">Pikap çağır</button></div>
+          <div class="confirm" id="pkOk" hidden></div>
+        </form>
+      </div>
+    </section>
+
+    <footer>
+      <span class="mono">AIB-01 · Rev. C · Kavram tasarımı</span>
+      <p>AI-Box bir kavram çalışmasıdır. Tarifeler, eşikler, enerji hesapları ve harita verileri örnektir; pilot uygulamada ölçülerek kesinleşecek.</p>
+    </footer>
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script>
+(() => {
+'use strict';
+const $ = s => document.querySelector(s);
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const fmt = (n, d = 1) => n.toLocaleString('tr-TR', { minimumFractionDigits: d, maximumFractionDigits: d });
+const tl = n => '₺' + fmt(n, 2);
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const lerp = (a, b, k) => a + (b - a) * k;
+const ease = k => k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
+
+/* ---------- veriler ---------- */
+const BOX_ID = 'AIB-DYB-0142', LIMIT = 40;
+const ITEMS = [
+  { id: 'phone',  ad: 'Akıllı telefon',     kg: 0.19, tl: 40, conf: 97 },
+  { id: 'laptop', ad: 'Dizüstü bilgisayar', kg: 2.10, tl: 40, conf: 96 },
+  { id: 'tablet', ad: 'Tablet',             kg: 0.48, tl: 40, conf: 94 },
+  { id: 'cable',  ad: 'Kablo yumağı',       kg: 0.35, tl: 25, conf: 91 },
+  { id: 'battery',ad: 'Pil paketi',         kg: 0.09, tl: 15, conf: 95 },
+  { id: 'bulb',   ad: 'LED ampul',          kg: 0.06, tl: 8,  conf: 92 },
+];
+const PARTS = [
+  { ref: 'U1',   ad: 'Kamera',            is: 'Kapak açılınca ve zorlamada kısa kayıt alır.' },
+  { ref: 'J1',   ad: 'QR plakası',        is: 'Kutunun kimliği ve konumu. Okutulmadan kapak açılmaz.' },
+  { ref: 'M1',   ad: 'Kapak ve kilit',    is: 'Eğimli kapak yağmuru dışarı atar; kilit yalnız doğrulamada çözülür.' },
+  { ref: 'NFC1', ad: 'Kart okuyucu',      is: 'Şahıs kazancı için temassız kart okutma noktası.' },
+  { ref: 'LC1',  ad: 'Yük hücresi tablası', is: 'Eklenen ağırlığı 10 g çözünürlükle ölçer.' },
+  { ref: 'TEG',  ad: 'Isıl üreteç (×8)',  is: 'Sıcak gövde ile serin kanatçık arasındaki farktan elektrik üretir.' },
+  { ref: 'HS1',  ad: 'Kanatçıklar',       is: 'Soğuk yüzü serin tutar, üretimi artırır.' },
+  { ref: 'C1',   ad: 'Süperkapasitör ve beyin', is: 'Enerjiyi biriktirir; tartı, tanıma eşleştirme ve bildirim burada yönetilir.' },
+  { ref: 'ANT1', ad: 'Anten',             is: 'NB-IoT ile belediyeye doluluk bildirimi gönderir.' },
+];
+const BOXES = [
+  { id: 'AIB-DYB-0142', mah: 'Kayapınar · Diclekent', fill: 34.6, pos: [0, 0] },
+  { id: 'AIB-DYB-0117', mah: 'Kayapınar · Peyas',     fill: 39.2, pos: [6, -6] },
+  { id: 'AIB-DYB-0088', mah: 'Bağlar · Kaynartepe',   fill: 12.4, pos: [-6, -12] },
+  { id: 'AIB-DYB-0031', mah: 'Yenişehir · Ofis',      fill: 40.6, pos: [12, 0] },
+  { id: 'AIB-DYB-0054', mah: 'Sur · Dağkapı',         fill: 8.1,  pos: [-12, 0] },
+  { id: 'AIB-DYB-0069', mah: 'Yenişehir · Huzurevleri', fill: 27.9, pos: [0, -12] },
+  { id: 'AIB-DYB-0103', mah: 'Bağlar · Bağcılar',     fill: 36.8, pos: [-6, 6] },
+  { id: 'AIB-DYB-0126', mah: 'Kayapınar · Fırat',     fill: 19.5, pos: [12, -12] },
+];
+
+/* ---------- arayüz durumu ---------- */
+let kg = 34.6, earned = 0, sel = ITEMS[1], busy = false, full = false;
+
+const itemsEl = $('#items');
+ITEMS.forEach(it => {
+  const b = document.createElement('button');
+  b.type = 'button'; b.className = 'item'; b.id = 'it-' + it.id;
+  b.setAttribute('aria-pressed', it === sel);
+  b.innerHTML = `${it.ad}<small>${fmt(it.kg, 2)} kg · ₺${it.tl}/kg</small>`;
+  b.onclick = () => { sel = it; itemsEl.querySelectorAll('.item').forEach(x => x.setAttribute('aria-pressed', x === b)); };
+  itemsEl.appendChild(b);
+});
+const partsEl = $('#parts');
+PARTS.forEach((p, i) => {
+  const tr = document.createElement('tr');
+  tr.className = 'part'; tr.tabIndex = 0; tr.dataset.i = i;
+  tr.innerHTML = `<td><span class="refc">${p.ref}</span></td><td>${p.ad}</td><td class="mute">${p.is}</td>`;
+  const on = () => setHi(i), off = () => setHi(-1);
+  tr.addEventListener('mouseenter', on); tr.addEventListener('mouseleave', off);
+  tr.addEventListener('focus', on); tr.addEventListener('blur', off);
+  tr.addEventListener('click', on);
+  partsEl.appendChild(tr);
+});
+function renderBoxes() {
+  $('#boxes').innerHTML = BOXES.map(b => {
+    const f = b.fill / LIMIT, c = f >= 1 ? 'c' : f >= .85 ? 'w' : '';
+    const s = f >= 1 ? 'Boşaltılacak' : f >= .85 ? 'Doluyor' : 'Normal';
+    return `<tr><td class="mono" style="font-size:12px">${b.id}</td><td>${b.mah}</td><td class="num">%${Math.round(f * 100)}</td><td><span class="status ${c}"><i></i>${s}</span></td></tr>`;
+  }).join('');
+}
+renderBoxes();
+
+function fillColor(f) { return f >= 1 ? 'crit' : f >= .85 ? 'warn' : 'ok'; }
+function updateReadout() {
+  const f = kg / LIMIT;
+  $('#rKg').textContent = fmt(kg);
+  $('#rEarn').textContent = tl(earned);
+  $('#meter').style.width = Math.min(100, f * 100) + '%';
+  $('#meter').style.background = `var(--${fillColor(f)})`;
+  $('#hudFill').textContent = `${fmt(kg)} / ${fmt(LIMIT)} kg`;
+  BOXES[0].fill = kg; renderBoxes();
+}
+
+/* ---------- 3B ---------- */
+const canvas = $('#gl'), stage = $('#stage');
+let renderer;
+try {
+  renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+} catch (e) { document.body.classList.add('no-gl'); }
+if (!renderer || !window.THREE) { document.body.classList.add('no-gl'); }
+
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const col = n => new THREE.Color(css(n) || '#888');
+
+let scene, camera, api = {};
+let setHi = () => {};
+if (renderer) build();
+
+function build() {
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.outputEncoding = THREE.sRGBEncoding;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+scene = new THREE.Scene();
+camera = new THREE.PerspectiveCamera(36, 1, 0.05, 200);
+scene.fog = new THREE.Fog(0xffffff, 12, 30);
+
+/* ışıklar: çevre haritası yerine gök/zemin ışığı + güneş + iki dolgu (her GPU'da aynı görünsün) */
+const fill1 = new THREE.DirectionalLight(0xdfeaf2, .55); fill1.position.set(-5, 3, 4); scene.add(fill1);
+const fill2 = new THREE.DirectionalLight(0xffffff, .35); fill2.position.set(0, 4, -6); scene.add(fill2);
+const hemi = new THREE.HemisphereLight(0xffffff, 0x8a948f, 0.55); scene.add(hemi);
+const sun = new THREE.DirectionalLight(0xfff3e0, 1.6);
+sun.position.set(4, 7, 3); sun.castShadow = true;
+sun.shadow.mapSize.set(1024, 1024);
+Object.assign(sun.shadow.camera, { left: -3, right: 3, top: 3, bottom: -3, near: 1, far: 20 });
+sun.shadow.bias = -0.0005;
+scene.add(sun, sun.target);
+
+/* --- yardımcılar --- */
+function tex(w, h, draw) {
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  draw(c.getContext('2d'), w, h);
+  const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; t.anisotropy = 4;
+  t.userData = { canvas: c, draw }; return t;
+}
+const box = (w, h, d, m) => { const me = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m); me.castShadow = me.receiveShadow = true; return me; };
+const cyl = (r1, r2, h, m, s = 24) => { const me = new THREE.Mesh(new THREE.CylinderGeometry(r1, r2, h, s), m); me.castShadow = true; return me; };
+
+/* --- zemin: sokak haritası dokusu --- */
+const MAP = 48;
+let groundTex;
+function drawMap() {
+  groundTex = tex(1024, 1024, (g, w, h) => {
+    g.fillStyle = css('--ground'); g.fillRect(0, 0, w, h);
+    const px = w / MAP;
+    g.fillStyle = css('--road');
+    for (let v = -24; v <= 24; v += 6) {
+      const p = (v + 24) * px;
+      g.fillRect(p - 0.9 * px, 0, 1.8 * px, h);
+      g.fillRect(0, p - 0.9 * px, w, 1.8 * px);
+    }
+    g.strokeStyle = css('--line'); g.lineWidth = 1;
+    for (let v = -24; v <= 24; v += 6) {
+      const p = (v + 24) * px;
+      g.setLineDash([px * .4, px * .4]);
+      g.beginPath(); g.moveTo(p, 0); g.lineTo(p, h); g.moveTo(0, p); g.lineTo(w, p); g.stroke();
+    }
+  });
+}
+drawMap();
+const groundMat = new THREE.MeshStandardMaterial({ map: groundTex, roughness: 1, metalness: 0 });
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(MAP, MAP), groundMat);
+ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true;
+// kutu kavşak köşesinde dursun: harita ızgarası kutunun yanından geçer
+ground.position.set(-2.6, 0, -2.6);
+scene.add(ground);
+
+/* --- malzemeler --- */
+const M = {};
+function mats() {
+  M.steel = M.steel || new THREE.MeshStandardMaterial({ metalness: .45, roughness: .42 });
+  M.steel.color = col('--steel');
+  M.dark = M.dark || new THREE.MeshStandardMaterial({ color: 0x1d2522, metalness: .4, roughness: .55 });
+  M.pcb = M.pcb || new THREE.MeshStandardMaterial({ metalness: .2, roughness: .5 });
+  M.pcb.color = new THREE.Color('#17603f');
+  M.copper = M.copper || new THREE.MeshStandardMaterial({ metalness: .5, roughness: .35 });
+  M.copper.color = new THREE.Color('#b8632a');
+  M.concrete = M.concrete || new THREE.MeshStandardMaterial({ roughness: .95, metalness: 0 });
+  M.concrete.color = col('--ground').offsetHSL(0, 0, -0.06);
+}
+mats();
+
+/* --- AI-Box --- */
+const W = .9, D = .7, H = 1.15, T = .03, FOOT = .1;
+const BOX = new THREE.Group(); scene.add(BOX);
+const parts = {}; // ref → { g, base, off, mats[] }
+function part(ref, off) {
+  const g = new THREE.Group(); BOX.add(g);
+  parts[ref] = { g, off: new THREE.Vector3(...off), mats: [] };
+  return g;
+}
+function pmat(ref, m) { const c = m.clone(); c.emissive = new THREE.Color(0); parts[ref].mats.push(c); return c; }
+
+const plinth = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.26, .06, 64), M.concrete);
+plinth.position.y = .03; plinth.receiveShadow = true; BOX.add(plinth);
+
+// gövde (patlatmada sabit)
+const shell = new THREE.Group(); BOX.add(shell);
+const shellMat = M.steel.clone(); const shellMats = [shellMat];
+[[W, H, T, 0, D / 2 - T / 2], [W, H, T, 0, -D / 2 + T / 2]].forEach(([w, h, d, x, z]) => { const m = box(w, h, d, shellMat); m.position.set(x, FOOT + h / 2, z); shell.add(m); });
+[[-1], [1]].forEach(([s]) => { const m = box(T, H, D - 2 * T, shellMat); m.position.set(s * (W / 2 - T / 2), FOOT + H / 2, 0); shell.add(m); });
+const floor = box(W, .03, D, shellMat); floor.position.y = FOOT + .015; shell.add(floor);
+[[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([a, b]) => { const f = box(.08, FOOT, .08, M.dark); f.position.set(a * (W / 2 - .06), FOOT / 2 + .06, b * (D / 2 - .06)); shell.add(f); });
+// ön yüz bandı (koyu) — panel zemin
+const band = box(W - .08, .52, .006, M.dark); band.position.set(0, FOOT + H - .35, D / 2 + .003); shell.add(band);
+
+// logo plakası + WEEE simgesi
+const logoTex = tex(1024, 256, (g, w, h) => {
+  g.fillStyle = '#17603f'; g.fillRect(0, 0, w, h);
+  g.fillStyle = '#eef3ef'; g.font = '900 150px "Big Shoulders Display", Impact, sans-serif'; g.textBaseline = 'middle';
+  g.fillText('AI-BOX', 40, h / 2 + 8);
+  const x2 = 40 + g.measureText('AI-BOX').width + 34;
+  g.font = '500 26px "Martian Mono", monospace';
+  const sub = ['ELEKTRONİK ATIK', 'YALNIZ QR İLE AÇILIR'], sw = Math.max(...sub.map(t => g.measureText(t).width));
+  g.save(); g.translate(x2, 0); if (sw > 800 - x2) g.scale((800 - x2) / sw, 1);
+  g.fillText(sub[0], 0, h / 2 - 26); g.fillText(sub[1], 0, h / 2 + 26); g.restore();
+  // üstü çizili çöp kutusu (WEEE)
+  g.save(); g.translate(880, 128); g.strokeStyle = '#eef3ef'; g.lineWidth = 9; g.lineJoin = 'round';
+  g.strokeRect(-36, -40, 72, 86); g.beginPath(); g.moveTo(-46, -50); g.lineTo(46, -50); g.stroke();
+  g.beginPath(); g.moveTo(-58, -70); g.lineTo(58, 70); g.moveTo(58, -70); g.lineTo(-58, 70); g.stroke();
+  g.fillStyle = '#eef3ef'; g.fillRect(-46, 70, 92, 14); g.restore();
+});
+const logo = new THREE.Mesh(new THREE.PlaneGeometry(.78, .195), new THREE.MeshStandardMaterial({ map: logoTex, roughness: .6 }));
+logo.position.set(0, FOOT + .36, D / 2 + .002); shell.add(logo);
+
+// J1: QR plakası
+const qrG = part('J1', [0, 0, .32]);
+const qrTex = tex(512, 512, (g, w) => {
+  g.fillStyle = '#ffffff'; g.fillRect(0, 0, w, w);
+  let n = 25, cell = (q, x, y) => false;
+  try { const q = qrcode(0, 'M'); q.addData('AIBOX:' + BOX_ID); q.make(); n = q.getModuleCount(); cell = (x, y) => q.isDark(y, x); }
+  catch (e) { const r = (x, y) => ((x * 73856093) ^ (y * 19349663)) % 7 < 3; cell = r; }
+  const pad = 40, s = (w - pad * 2) / n; g.fillStyle = '#0d1411';
+  for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) if (cell(x, y)) g.fillRect(pad + x * s, pad + y * s, Math.ceil(s), Math.ceil(s));
+});
+const qrMat = pmat('J1', new THREE.MeshStandardMaterial({ map: qrTex, roughness: .5 }));
+const qrBack = box(.3, .3, .012, pmat('J1', M.dark)); qrG.add(qrBack);
+const qr = new THREE.Mesh(new THREE.PlaneGeometry(.26, .26), qrMat); qr.position.z = .0065; qrG.add(qr);
+qrG.position.set(-.2, FOOT + H - .33, D / 2 + .006);
+const idTex = tex(512, 64, (g, w, h) => { g.fillStyle = '#eef3ef'; g.font = '500 34px "Martian Mono", monospace'; g.textBaseline = 'middle'; g.fillText(BOX_ID, 8, h / 2); });
+const idLbl = new THREE.Mesh(new THREE.PlaneGeometry(.26, .033), new THREE.MeshBasicMaterial({ map: idTex, transparent: true }));
+idLbl.position.set(0, -.172, .007); qrG.add(idLbl);
+const ring = new THREE.Mesh(new THREE.RingGeometry(.16, .175, 48), new THREE.MeshBasicMaterial({ color: 0x4cc38a, transparent: true, opacity: 0 }));
+ring.position.z = .012; qrG.add(ring);
+
+// LCD ağırlık ekranı
+let lcdVal = kg;
+const lcdTex = tex(512, 220, () => {});
+function drawLCD(v, warn) {
+  const c = lcdTex.userData.canvas, g = c.getContext('2d'), w = c.width, h = c.height;
+  g.fillStyle = warn ? '#3a120c' : '#0b1d15'; g.fillRect(0, 0, w, h);
+  g.fillStyle = warn ? '#ff8a6c' : '#7cf0b0';
+  g.font = '500 28px "Martian Mono", monospace'; g.textBaseline = 'top';
+  g.fillText(warn ? 'DOLU · BİLDİRİLDİ' : 'HAZNE', 20, 18);
+  g.font = '900 120px "Big Shoulders Display", Impact, sans-serif'; g.textBaseline = 'alphabetic';
+  g.fillText(fmt(v) + ' kg', 20, 186);
+  lcdTex.needsUpdate = true;
+}
+drawLCD(kg, false);
+const lcd = new THREE.Mesh(new THREE.PlaneGeometry(.27, .116), new THREE.MeshBasicMaterial({ map: lcdTex, toneMapped: false }));
+lcd.position.set(.2, FOOT + H - .25, D / 2 + .007); shell.add(lcd);
+
+// NFC1: kart okuyucu
+const nfcG = part('NFC1', [.15, 0, .3]);
+const nfcTex = tex(256, 160, (g, w, h) => {
+  g.fillStyle = '#1d2522'; g.fillRect(0, 0, w, h);
+  g.strokeStyle = '#eef3ef'; g.lineWidth = 8; g.lineCap = 'round';
+  for (let i = 0; i < 4; i++) { g.beginPath(); g.arc(90, 80, 18 + i * 20, -0.9, 0.9); g.stroke(); }
+  g.fillStyle = '#eef3ef'; g.font = '500 20px "Martian Mono", monospace'; g.fillText('KART', 170, 88);
+});
+const nfcMat = pmat('NFC1', new THREE.MeshStandardMaterial({ map: nfcTex, roughness: .4 }));
+const nfc = box(.2, .125, .02, nfcMat); nfcG.add(nfc);
+nfcG.position.set(.2, FOOT + H - .43, D / 2 + .012);
+
+// LED doluluk çubuğu
+const leds = [];
+for (let i = 0; i < 10; i++) {
+  const m = new THREE.MeshBasicMaterial({ color: 0x2a332f, toneMapped: false });
+  const l = box(.058, .022, .01, m); l.castShadow = false;
+  l.position.set(-.3 + i * .0667, FOOT + H - .56, D / 2 + .008); shell.add(l); leds.push(l);
+}
+function setLeds(f) {
+  const n = Math.min(10, Math.ceil(f * 10 - 1e-6));
+  const on = f >= 1 ? 0xff5a3c : f >= .85 ? 0xffb02e : 0x3ddc84;
+  leds.forEach((l, i) => l.material.color.setHex(i < n ? on : 0x2a332f));
+}
+setLeds(kg / LIMIT);
+
+// M1: kapak (arka kenardan menteşeli) + kilit
+const lidG = part('M1', [0, .42, 0]);
+const lidPivot = new THREE.Group(); lidG.add(lidPivot);
+lidPivot.position.set(0, FOOT + H, -D / 2 - .02);
+const lidMat = pmat('M1', M.steel); shellMats.push(lidMat);
+const lid = box(W + .05, .035, D + .07, lidMat); lid.position.set(0, .0175, (D + .07) / 2 - .015); lidPivot.add(lid);
+const lip = box(W + .05, .06, .02, lidMat); lip.position.set(0, -.012, D + .04); lidPivot.add(lip); // taşkın kenar
+const handle = box(.24, .02, .03, pmat('M1', M.dark)); handle.position.set(0, .045, D - .04); lidPivot.add(handle);
+const lock = box(.07, .05, .04, pmat('M1', M.dark)); lock.position.set(0, FOOT + H - .05, D / 2 - .05); lidG.add(lock);
+const lockLed = new THREE.Mesh(new THREE.SphereGeometry(.009, 12, 8), new THREE.MeshBasicMaterial({ color: 0xff5a3c, toneMapped: false }));
+lockLed.position.set(.3, FOOT + H - .1, D / 2 + .01); shell.add(lockLed);
+let lidAngle = 0; const LID_OPEN = -1.75;
+
+// U1: kamera direği ve kubbesi
+const camG = part('U1', [0, .5, -.15]);
+const mast = cyl(.018, .018, .32, pmat('U1', M.dark)); mast.position.set(-W / 2 + .07, FOOT + H + .16, -D / 2 + .07); camG.add(mast);
+const arm = box(.03, .025, .16, pmat('U1', M.dark)); arm.position.set(-W / 2 + .07, FOOT + H + .32, -D / 2 + .14); camG.add(arm);
+const dome = new THREE.Mesh(new THREE.SphereGeometry(.055, 24, 16, 0, Math.PI * 2, 0, Math.PI / 2), pmat('U1', new THREE.MeshStandardMaterial({ color: 0x0c1110, metalness: .3, roughness: .1 })));
+dome.rotation.x = Math.PI; dome.position.set(-W / 2 + .07, FOOT + H + .31, -D / 2 + .22); dome.castShadow = true; camG.add(dome);
+const camCap = cyl(.06, .06, .02, pmat('U1', M.steel)); camCap.position.set(-W / 2 + .07, FOOT + H + .32, -D / 2 + .22); camG.add(camCap);
+const camLed = new THREE.Mesh(new THREE.SphereGeometry(.008, 10, 8), new THREE.MeshBasicMaterial({ color: 0xff3b30, toneMapped: false }));
+camLed.position.set(-W / 2 + .07, FOOT + H + .27, -D / 2 + .265); camG.add(camLed);
+// görüş konisi
+const coneMat = new THREE.MeshBasicMaterial({ color: 0x4cc38a, transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide });
+const cone = new THREE.Mesh(new THREE.ConeGeometry(.9, 1.6, 40, 1, true), coneMat);
+cone.geometry.translate(0, -.8, 0); cone.position.copy(dome.position); cone.lookAt(.15, .2, 1.4);
+cone.rotateX(-Math.PI / 2); camG.add(cone);
+
+// LC1: yük hücresi tablası
+const lcG = part('LC1', [0, -.25, .55]);
+const plate = box(W - .12, .025, D - .12, pmat('LC1', M.copper)); plate.position.y = FOOT + .07; lcG.add(plate);
+[[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([a, b]) => { const c = cyl(.025, .025, .04, pmat('LC1', M.dark), 16); c.position.set(a * (W / 2 - .14), FOOT + .045, b * (D / 2 - .14)); lcG.add(c); });
+
+// TEG modülleri ve HS1 kanatçıklar (iki yan)
+const tegG = part('TEG', [0, 0, 0]); const tegs = [];
+const hsG = part('HS1', [0, 0, 0]); const fins = [];
+const tegMat = pmat('TEG', new THREE.MeshStandardMaterial({ color: 0xf1efe8, roughness: .7 }));
+const tegHot = new THREE.MeshBasicMaterial({ color: 0xff7a3d }), tegCold = new THREE.MeshBasicMaterial({ color: 0x3aa8ff });
+const finMat = pmat('HS1', new THREE.MeshStandardMaterial({ color: 0xc9cfcc, metalness: .5, roughness: .35 })); const finMats = [finMat];
+[-1, 1].forEach(s => {
+  for (let i = 0; i < 4; i++) {
+    const t = new THREE.Group();
+    const core = box(.012, .1, .1, tegMat); t.add(core);
+    const h = box(.003, .1, .1, tegHot); h.position.x = -s * .007; t.add(h);
+    const c = box(.003, .1, .1, tegCold); c.position.x = s * .007; t.add(c);
+    t.position.set(s * (W / 2 + .007), FOOT + .35 + (i % 2) * .4, (i < 2 ? -.14 : .14));
+    t.userData = { s }; tegG.add(t); tegs.push(t);
+  }
+  const fg = new THREE.Group(); fg.userData = { s };
+  const base = box(.012, .78, D - .12, finMat); base.position.x = s * (W / 2 + .02); fg.add(base);
+  for (let i = 0; i < 9; i++) { const f = box(.07, .74, .008, finMat); f.position.set(s * (W / 2 + .06), 0, -(D - .16) / 2 + i * (D - .16) / 8); fg.add(f); }
+  fg.position.y = FOOT + .55; hsG.add(fg); fins.push(fg);
+});
+
+// C1 + ANT1: arka modül
+const c1G = part('C1', [0, .05, -.45]);
+const mod = box(.36, .22, .07, pmat('C1', M.pcb)); mod.position.set(.1, FOOT + .75, -D / 2 - .04); c1G.add(mod);
+for (let i = 0; i < 2; i++) { const cp = cyl(.035, .035, .12, pmat('C1', M.dark), 20); cp.rotation.z = Math.PI / 2; cp.position.set(.04 + i * .13, FOOT + .7, -D / 2 - .085); c1G.add(cp); }
+const trace = box(.3, .006, .003, pmat('C1', M.copper)); trace.position.set(.1, FOOT + .8, -D / 2 - .077); c1G.add(trace);
+const antG = part('ANT1', [0, .55, -.2]);
+const ant = cyl(.008, .012, .28, pmat('ANT1', M.dark), 10); ant.position.set(W / 2 - .08, FOOT + H + .14, -D / 2 + .05); antG.add(ant);
+const antTip = new THREE.Mesh(new THREE.SphereGeometry(.014, 12, 8), new THREE.MeshBasicMaterial({ color: 0xffb02e, toneMapped: false }));
+antTip.position.set(W / 2 - .08, FOOT + H + .29, -D / 2 + .05); antG.add(antTip);
+const waves = [];
+for (let i = 0; i < 3; i++) {
+  const w = new THREE.Mesh(new THREE.TorusGeometry(.1, .006, 6, 48), new THREE.MeshBasicMaterial({ color: 0xffb02e, transparent: true, opacity: 0, toneMapped: false, depthWrite: false }));
+  w.position.copy(antTip.position); w.rotation.x = Math.PI / 2; antG.add(w); waves.push({ m: w, t: i / 3 });
+}
+
+Object.values(parts).forEach(p => { p.base = p.g.position.clone(); });
+
+// hazne: dolu atık yığını
+const PILE = 260;
+const pileMat = new THREE.MeshStandardMaterial({ roughness: .6, metalness: .3 });
+const pile = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), pileMat, PILE);
+pile.castShadow = true;
+const pal = ['#17603f', '#1d2522', '#3c4643', '#8b9591', '#b8632a', '#e6e2d8', '#24302c'];
+const pileData = [];
+{ const d = new THREE.Object3D(), c = new THREE.Color();
+  for (let i = 0; i < PILE; i++) {
+    const layer = i / PILE;
+    const y = FOOT + .1 + layer * (H - .2) + Math.random() * .04;
+    d.position.set((Math.random() - .5) * (W - .16), y, (Math.random() - .5) * (D - .16));
+    d.rotation.set(Math.random() * 3, Math.random() * 3, Math.random() * 3);
+    d.scale.set(.05 + Math.random() * .16, .015 + Math.random() * .04, .04 + Math.random() * .1);
+    d.updateMatrix(); pileData.push(d.matrix.clone());
+    pile.setColorAt(i, c.set(pal[i % pal.length]));
+  }
+}
+BOX.add(pile);
+function setPile(f) {
+  const n = Math.round(clamp(f, 0, 1) * PILE), hide = new THREE.Matrix4().makeScale(0, 0, 0);
+  for (let i = 0; i < PILE; i++) pile.setMatrixAt(i, i < n ? pileData[i] : hide);
+  pile.instanceMatrix.needsUpdate = true;
+}
+setPile(kg / LIMIT);
+const pileTop = f => FOOT + .1 + clamp(f, 0, 1) * (H - .2);
+
+/* --- atık modelleri --- */
+function itemMesh(id) {
+  const g = new THREE.Group();
+  const blk = new THREE.MeshStandardMaterial({ color: 0x15191a, metalness: .5, roughness: .25 });
+  const alu = new THREE.MeshStandardMaterial({ color: 0xb9bfc0, metalness: .5, roughness: .3 });
+  if (id === 'phone') { g.add(box(.075, .155, .009, blk)); const s = new THREE.Mesh(new THREE.PlaneGeometry(.068, .145), new THREE.MeshBasicMaterial({ color: 0x1e5c48 })); s.position.z = .005; g.add(s); }
+  if (id === 'tablet') { g.add(box(.17, .24, .008, alu)); const s = new THREE.Mesh(new THREE.PlaneGeometry(.155, .225), new THREE.MeshBasicMaterial({ color: 0x14231d })); s.position.z = .0045; g.add(s); }
+  if (id === 'laptop') { const b = box(.32, .014, .22, alu); g.add(b); const sc = box(.32, .21, .01, alu); sc.position.set(0, .105, -.11); sc.rotation.x = -.25; g.add(sc); }
+  if (id === 'battery') { for (let i = 0; i < 4; i++) { const c = cyl(.015, .015, .05, i % 2 ? alu : new THREE.MeshStandardMaterial({ color: 0x17603f }), 16); c.position.x = (i - 1.5) * .032; g.add(c); } }
+  if (id === 'cable') { const t = new THREE.Mesh(new THREE.TorusKnotGeometry(.06, .008, 120, 8, 2, 5), blk); g.add(t); }
+  if (id === 'bulb') { const s = new THREE.Mesh(new THREE.SphereGeometry(.04, 20, 14), new THREE.MeshStandardMaterial({ color: 0xf6f3e8, roughness: .2, transparent: true, opacity: .9 })); s.position.y = .03; g.add(s); g.add(cyl(.018, .014, .04, alu, 16)); }
+  g.traverse(o => { if (o.isMesh) o.castShadow = true; });
+  return g;
+}
+const beam = new THREE.Mesh(new THREE.PlaneGeometry(.5, .012), new THREE.MeshBasicMaterial({ color: 0x4cc38a, transparent: true, opacity: 0, toneMapped: false, side: THREE.DoubleSide, depthWrite: false }));
+scene.add(beam);
+const scanFrame = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.PlaneGeometry(.44, .36)), new THREE.LineBasicMaterial({ color: 0x4cc38a, transparent: true, opacity: 0 }));
+scene.add(scanFrame);
+
+/* --- kart ve sertifika --- */
+const cardTex = tex(512, 320, (g, w, h) => {
+  const gr = g.createLinearGradient(0, 0, w, h); gr.addColorStop(0, '#1f3a4f'); gr.addColorStop(1, '#0f1f2b');
+  g.fillStyle = gr; g.fillRect(0, 0, w, h);
+  g.fillStyle = '#d6b25e'; g.fillRect(40, 110, 70, 54);
+  g.fillStyle = '#e8eef2'; g.font = '500 30px "Martian Mono", monospace'; g.fillText('•••• •••• •••• 4821', 40, 240);
+  g.font = '500 20px "Martian Mono", monospace'; g.fillText('BANKA KARTI', 40, 60);
+});
+const card = box(.17, .107, .004, new THREE.MeshStandardMaterial({ map: cardTex, roughness: .35, metalness: .2 }));
+card.visible = false; scene.add(card);
+const certTex = tex(512, 680, (g, w, h) => {
+  g.fillStyle = '#f4f1e6'; g.fillRect(0, 0, w, h);
+  g.strokeStyle = '#17603f'; g.lineWidth = 14; g.strokeRect(22, 22, w - 44, h - 44);
+  g.lineWidth = 3; g.strokeRect(44, 44, w - 88, h - 88);
+  g.fillStyle = '#17603f'; g.textAlign = 'center';
+  g.font = '500 22px "Martian Mono", monospace'; g.fillText('KAYAPINAR BELEDİYESİ · ÖRNEK', w / 2, 110);
+  g.font = '900 96px "Big Shoulders Display", Impact, sans-serif'; g.fillText('YEŞİL', w / 2, 230); g.fillText('SERTİFİKA', w / 2, 320);
+  // yaprak
+  g.save(); g.translate(w / 2, 440); g.beginPath(); g.moveTo(0, -70); g.quadraticCurveTo(70, -10, 0, 70); g.quadraticCurveTo(-70, -10, 0, -70); g.fill();
+  g.strokeStyle = '#f4f1e6'; g.lineWidth = 5; g.beginPath(); g.moveTo(0, -55); g.lineTo(0, 66); g.stroke(); g.restore();
+  g.font = '500 22px "Martian Mono", monospace'; g.fillStyle = '#14201b';
+  g.fillText('2026 · 2.340 kg e-atık', w / 2, 568); g.fillText('KADEME II', w / 2, 604);
+});
+const cert = new THREE.Group();
+const certP = box(.42, .56, .02, new THREE.MeshStandardMaterial({ color: 0x5a3b22, roughness: .6 }));
+const certF = new THREE.Mesh(new THREE.PlaneGeometry(.38, .505), new THREE.MeshStandardMaterial({ map: certTex, roughness: .8 })); certF.position.z = .011;
+cert.add(certP, certF); cert.position.set(1.12, .95, .5); cert.rotation.y = -.6; cert.visible = false; scene.add(cert);
+
+/* --- yağmur --- */
+const RN = 1400, rainGeo = new THREE.BufferGeometry(), rainPos = new Float32Array(RN * 6);
+const rainV = new Float32Array(RN);
+function rDrop(i, top) {
+  const x = (Math.random() - .5) * 4, z = (Math.random() - .5) * 4, y = top ? 3.4 + Math.random() * .5 : Math.random() * 3.4;
+  rainPos.set([x, y, z, x, y - .07, z], i * 6); rainV[i] = 4 + Math.random() * 2;
+}
+for (let i = 0; i < RN; i++) rDrop(i);
+rainGeo.setAttribute('position', new THREE.BufferAttribute(rainPos, 3));
+const rain = new THREE.LineSegments(rainGeo, new THREE.LineBasicMaterial({ color: 0x6f9fc0, transparent: true, opacity: .55 }));
+rain.visible = false; scene.add(rain);
+const splashes = [];
+for (let i = 0; i < 24; i++) { const s = new THREE.Mesh(new THREE.RingGeometry(.005, .014, 12), new THREE.MeshBasicMaterial({ color: 0x9cc4dd, transparent: true, opacity: 0, side: THREE.DoubleSide, depthWrite: false })); s.rotation.x = -Math.PI / 2; scene.add(s); splashes.push({ m: s, t: 1 }); }
+let splashI = 0;
+
+/* --- şehir: diğer kutular, kamyonet, ev --- */
+const city = new THREE.Group(); scene.add(city);
+const minis = [];
+function miniBox(b) {
+  const g = new THREE.Group();
+  const body = box(.9, 1.25, .7, M.steel); body.position.y = .62; g.add(body);
+  const l = box(.95, .04, .77, M.steel); l.position.y = 1.27; g.add(l);
+  const f = b.fill / LIMIT;
+  const pm = new THREE.MeshBasicMaterial({ color: f >= 1 ? 0xff5a3c : f >= .85 ? 0xffb02e : 0x3ddc84, toneMapped: false, transparent: true, opacity: .9 });
+  const pillar = box(.18, 1, .18, pm); pillar.castShadow = false; pillar.scale.y = .01; pillar.position.y = 1.4; g.add(pillar);
+  g.position.set(b.pos[0], 0, b.pos[1]); g.userData = { pillar, pm, f };
+  return g;
+}
+BOXES.slice(1).forEach(b => { const m = miniBox(b); city.add(m); minis.push({ b, m }); });
+// ana kutunun direği
+const mainPillarMat = new THREE.MeshBasicMaterial({ color: 0x3ddc84, toneMapped: false, transparent: true, opacity: .9 });
+const mainPillar = box(.18, 1, .18, mainPillarMat); mainPillar.castShadow = false; mainPillar.position.set(0, 1.9, 0); mainPillar.scale.y = .01; scene.add(mainPillar);
+
+// pikap (belediye kamyoneti)
+function truckMesh() {
+  const g = new THREE.Group();
+  const white = new THREE.MeshStandardMaterial({ color: 0xf2f4f1, roughness: .4, metalness: .2 });
+  const green = new THREE.MeshStandardMaterial({ color: 0x17603f, roughness: .5 });
+  const glass = new THREE.MeshStandardMaterial({ color: 0x1b2a33, roughness: .1, metalness: .6 });
+  const cab = box(.9, .75, 1.0, white); cab.position.set(0, .62, .9); g.add(cab);
+  const ws = box(.86, .32, .02, glass); ws.position.set(0, .8, 1.41); g.add(ws);
+  const bed = box(.95, .3, 1.7, green); bed.position.set(0, .45, -.45); g.add(bed);
+  const rail = box(.95, .2, .04, white); rail.position.set(0, .7, -1.28); g.add(rail);
+  const stripe = box(.92, .08, 1.02, green); stripe.position.set(0, .45, .9); g.add(stripe);
+  const beacon = box(.3, .06, .1, new THREE.MeshBasicMaterial({ color: 0xffb02e, toneMapped: false })); beacon.position.set(0, 1.03, .9); g.add(beacon);
+  [[-1, .9], [1, .9], [-1, -.75], [1, -.75]].forEach(([s, z]) => { const w = cyl(.2, .2, .14, new THREE.MeshStandardMaterial({ color: 0x151918, roughness: .8 }), 18); w.rotation.z = Math.PI / 2; w.position.set(s * .48, .2, z); g.add(w); });
+  g.userData.beacon = beacon;
+  return g;
+}
+const truck = truckMesh(); truck.scale.setScalar(.85); scene.add(truck);
+const fridge = new THREE.Group();
+{ const w = new THREE.MeshStandardMaterial({ color: 0xeceee9, roughness: .35, metalness: .1 });
+  const f = box(.6, 1.6, .6, w); f.position.y = .8; fridge.add(f);
+  const s = box(.6, .01, .61, new THREE.MeshStandardMaterial({ color: 0x9aa09d })); s.position.y = 1.05; fridge.add(s);
+  const tv = box(1.0, .6, .06, new THREE.MeshStandardMaterial({ color: 0x111414, roughness: .2, metalness: .4 })); tv.position.set(.95, .35, 0); tv.rotation.z = .08; fridge.add(tv);
+}
+const house = new THREE.Group();
+{ const wall = new THREE.MeshStandardMaterial({ color: 0xd9c7a8, roughness: .9 });
+  const roof = new THREE.MeshStandardMaterial({ color: 0x8a4b2a, roughness: .8 });
+  const b = box(3, 2.4, 2.4, wall); b.position.y = 1.2; house.add(b);
+  const r = new THREE.Mesh(new THREE.ConeGeometry(2.3, 1.1, 4), roof); r.rotation.y = Math.PI / 4; r.position.y = 2.95; r.scale.z = .8; r.castShadow = true; house.add(r);
+  const door = box(.6, 1.1, .05, new THREE.MeshStandardMaterial({ color: 0x3b2a1f })); door.position.set(0, .55, 1.21); house.add(door);
+}
+house.position.set(4.2, 0, 13.4); house.rotation.y = Math.PI; scene.add(house);
+fridge.position.set(3.4, 0, 11.3); scene.add(fridge);
+// yol noktaları (sokaklar x=±3.4, z=±3.4 + 6k hizasında)
+const R = v => v - 2.6; // harita kaydırması
+const routeCity = [[R(-18), R(18)], [R(-18), R(0)], [R(0), R(0)], [R(12), R(0)], [R(12), R(-6)], [R(6), R(-6)], [R(6), R(18)], [R(-18), R(18)]].map(([x, z]) => new THREE.Vector3(x, 0, z));
+const routePick = [[R(-6), R(12)], [R(6), R(12)]].map(([x, z]) => new THREE.Vector3(x, 0, z));
+const routeLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints(routeCity.map(p => p.clone().setY(.03))), new THREE.LineDashedMaterial({ color: 0xb8632a, dashSize: .5, gapSize: .3, transparent: true, opacity: 0 }));
+routeLine.computeLineDistances(); scene.add(routeLine);
+
+/* ---------- tema ---------- */
+function applyTheme() {
+  const bg = col('--bg');
+  renderer.setClearColor(bg); scene.fog.color.copy(bg);
+  mats();
+  shellMats.forEach(m => { if (!m.userData.heat) m.color = col('--steel'); });
+  drawMap(); groundMat.map = groundTex; groundMat.needsUpdate = true;
+  const dark = document.documentElement.dataset.theme === 'dark' || (document.documentElement.dataset.theme !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches);
+  hemi.intensity = dark ? .35 : .55; sun.intensity = dark ? 1.25 : 1.6;
+  renderer.toneMappingExposure = dark ? .95 : 1.05;
+}
+applyTheme();
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
+new MutationObserver(applyTheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+/* ---------- ısıl görünüm ---------- */
+const heatU = { uHeat: { value: .8 }, uSun: { value: new THREE.Vector3(.5, .8, .3).normalize() }, uCool: { value: 0 } };
+const heatVS = 'varying vec3 vN; varying vec3 vW; void main(){ vN = normalize(mat3(modelMatrix)*normal); vec4 w = modelMatrix*vec4(position,1.0); vW = w.xyz; gl_Position = projectionMatrix*viewMatrix*w; }';
+const heatFS = `uniform float uHeat; uniform vec3 uSun; uniform float uCool; varying vec3 vN; varying vec3 vW;
+vec3 ramp(float t){ t=clamp(t,0.,1.);
+  vec3 a=vec3(.10,.22,.55), b=vec3(.10,.62,.75), c=vec3(.95,.85,.25), d=vec3(.95,.45,.12), e=vec3(.80,.12,.10);
+  if(t<.25) return mix(a,b,t/.25); if(t<.5) return mix(b,c,(t-.25)/.25); if(t<.75) return mix(c,d,(t-.5)/.25); return mix(d,e,(t-.75)/.25); }
+void main(){ float s = max(dot(normalize(vN), uSun), 0.); float h = uHeat*(.45+.55*s) + .05*vW.y;
+  h = mix(h, uHeat*.35 + .08*s, uCool);
+  float iso = smoothstep(.02,.0, abs(fract(h*8.)-.5)-.47);
+  gl_FragColor = vec4(ramp(h)*(1.-iso*.25), 1.); }`;
+const heatShell = new THREE.ShaderMaterial({ uniforms: heatU, vertexShader: heatVS, fragmentShader: heatFS });
+const heatFinU = { uHeat: heatU.uHeat, uSun: heatU.uSun, uCool: { value: 1 } };
+const heatFin = new THREE.ShaderMaterial({ uniforms: heatFinU, vertexShader: heatVS, fragmentShader: heatFS });
+heatShell.userData.heat = heatFin.userData.heat = true;
+let thermalOn = false;
+const origMat = new Map();
+function setThermal(on) {
+  if (on === thermalOn) return; thermalOn = on;
+  const swap = (root, hm, test) => root.traverse(o => {
+    if (!o.isMesh || !test(o)) return;
+    if (on) { origMat.set(o, o.material); o.material = hm; } else if (origMat.has(o)) o.material = origMat.get(o);
+  });
+  swap(shell, heatShell, o => shellMats.includes(o.material) || origMat.has(o));
+  swap(lidPivot, heatShell, o => o.material === lidMat || origMat.has(o));
+  swap(hsG, heatFin, () => true);
+}
+// enerji parçacıkları (TEG → C1)
+const EP = 90, epGeo = new THREE.BufferGeometry(), epPos = new Float32Array(EP * 3), epT = new Float32Array(EP);
+for (let i = 0; i < EP; i++) epT[i] = Math.random();
+epGeo.setAttribute('position', new THREE.BufferAttribute(epPos, 3));
+const epMat = new THREE.PointsMaterial({ color: 0xffb02e, size: .03, transparent: true, opacity: 0, depthWrite: false, toneMapped: false });
+const ep = new THREE.Points(epGeo, epMat); scene.add(ep);
+let pNowW = .6;
+
+/* ---------- kamera ve durumlar ---------- */
+const STATES = {
+  hero:     { pos: [2.7, 1.75, 3.5],  tgt: [0, .78, 0],   fog: [10, 26] },
+  flow:     { pos: [.55, 1.55, 3.45], tgt: [0, .95, .45], fog: [10, 26] },
+  explode:  { pos: [3.3, 2.3, 3.2],   tgt: [0, .9, 0],    fog: [10, 26] },
+  thermal:  { pos: [3.2, 1.5, 2.4],   tgt: [0, .75, 0],   fog: [10, 26] },
+  security: { pos: [1.9, 2.4, 3.1],   tgt: [0, 1.05, .2], fog: [10, 26] },
+  reward:   { pos: [1.3, 1.35, 2.5],  tgt: [.25, .98, .3], fog: [10, 26] },
+  city:     { pos: [15, 24, 21],      tgt: [-1.5, 0, -3], fog: [34, 80] },
+  pickup:   { pos: [-6.5, 6.2, 1.2],  tgt: [.8, .4, 10.6], fog: [18, 44] },
+};
+let state = 'hero';
+const camPos = new THREE.Vector3(...STATES.hero.pos), camTgt = new THREE.Vector3(...STATES.hero.tgt);
+const fogNF = [10, 26];
+let yaw = 0, pitch = 0, yawV = 0, dragging = false, lastX = 0, lastY = 0, autoT = 0;
+canvas.addEventListener('pointerdown', e => { dragging = true; lastX = e.clientX; lastY = e.clientY; canvas.setPointerCapture(e.pointerId); });
+canvas.addEventListener('pointermove', e => {
+  if (!dragging) return;
+  const dx = e.clientX - lastX, dy = e.clientY - lastY; lastX = e.clientX; lastY = e.clientY;
+  yawV = -dx * .006; yaw += yawV; pitch = clamp(pitch + dy * .004, -.35, .5); autoT = 0;
+});
+const endDrag = () => { dragging = false; };
+canvas.addEventListener('pointerup', endDrag); canvas.addEventListener('pointercancel', endDrag);
+
+let explodeK = 0, explodeTo = 0, coneK = 0, coneTo = 0, rainOn = false, cityK = 0, cityTo = 0;
+let heatK = 0, heatTo = 0;
+let hiIdx = -1;
+setHi = i => {
+  hiIdx = i;
+  partsEl.querySelectorAll('tr').forEach((tr, j) => tr.classList.toggle('hi', j === i));
+  PARTS.forEach((p, j) => { const pp = parts[p.ref]; if (pp) pp.mats.forEach(m => m.emissive.setHex(j === i ? 0x7a3a10 : 0)); });
+  callEls.forEach((c, j) => c.classList.toggle('hi', j === i));
+};
+// açıklama etiketleri
+const callWrap = $('#callouts');
+const callEls = PARTS.map(p => { const d = document.createElement('div'); d.className = 'callout'; d.innerHTML = `<i></i><span><b>${p.ref}</b>${p.ad}</span>`; callWrap.appendChild(d); return d; });
+const callAnchor = { U1: dome, J1: qr, M1: handle, NFC1: nfc, LC1: plate, TEG: tegs[5], HS1: fins[1].children[5], C1: mod, ANT1: antTip };
+
+api.setState = s => {
+  if (!STATES[s] || s === state) return; state = s;
+  explodeTo = s === 'explode' ? 1 : 0;
+  coneTo = s === 'security' ? 1 : 0;
+  cityTo = s === 'city' ? 1 : 0;
+  heatTo = s === 'thermal' ? 1 : 0;
+  setThermal(s === 'thermal');
+  if (s !== 'security' && rainOn) toggleRain(false);
+  if (s !== 'explode') setHi(-1);
+  yaw *= .3; pitch *= .3;
+  $('#app').classList.toggle('off', s !== 'flow' && !busy);
+  card.visible = s === 'reward' && rewardMode === 'p';
+  cert.visible = s === 'reward' && rewardMode === 'k';
+  setHud();
+};
+function setHud() {
+  const m = { hero: 'Kayapınar', flow: 'Kayapınar', explode: 'Patlatılmış görünüm', thermal: 'Isıl görünüm', security: 'Güvenlik', reward: 'Teşvik', city: 'Diyarbakır · 8 kutu', pickup: 'Pikap · Kayapınar' };
+  $('#hudState').innerHTML = `<b>${state === 'city' ? 'Belediye paneli' : BOX_ID}</b> · ${m[state]}`;
+}
+
+/* ---------- tween ---------- */
+const tweens = [];
+const tween = (d, fn, ez = ease) => new Promise(r => tweens.push({ t: 0, d: Math.max(.01, d * (reduced ? .35 : 1)), fn, ez, r }));
+const wait = d => tween(d, () => {});
+
+/* ---------- simülasyon ---------- */
+const appEl = $('#app'), appSteps = appEl.querySelectorAll('.app-steps i'), flowLis = document.querySelectorAll('#flowList li');
+function appShow(step, k, t, s) {
+  appEl.classList.remove('off'); $('#appK').textContent = k; $('#appT').textContent = t; $('#appS').textContent = s;
+  appSteps.forEach((e, i) => e.classList.toggle('on', i <= step));
+  flowLis.forEach((e, i) => e.classList.toggle('on', i <= step));
+}
+let toastTimer;
+function toast(k, t, ok) {
+  const el = $('#toast'); $('#toastK').textContent = k; $('#toastT').textContent = t;
+  el.classList.toggle('ok', !!ok); el.classList.add('on');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove('on'), 5200);
+}
+let waveOn = 0;
+api.drop = async (it) => {
+  const item = itemMesh(it.id); item.scale.setScalar(.01);
+  const P0 = new THREE.Vector3(0, 1.12, 1.35);
+  item.position.copy(P0); scene.add(item);
+  // 1 — tara
+  appShow(0, 'Tara', 'Atık taranıyor…', 'Kameraya tut, hareket ettirme.');
+  await tween(.45, k => item.scale.setScalar(.01 + k * .99));
+  scanFrame.position.copy(P0); beam.position.copy(P0);
+  await tween(1.2, k => {
+    scanFrame.material.opacity = Math.sin(k * Math.PI) * .9; beam.material.opacity = Math.sin(k * Math.PI);
+    beam.position.y = P0.y + Math.sin(k * Math.PI * 3) * .16; item.rotation.y = k * 2.2;
+  }, k => k);
+  appShow(0, 'Tara', `Tanındı: ${it.ad}`, `Güven %${it.conf} · tahmini ${fmt(it.kg, 2)} kg`);
+  await wait(.55);
+  // 2 — QR
+  appShow(1, 'QR', 'Kutunun QR\'ını okut', 'Kamerayı kutunun önündeki koda çevir.');
+  await tween(.9, k => { ring.material.opacity = Math.sin(k * Math.PI); ring.scale.setScalar(1 + k * .5); });
+  ring.material.opacity = 0;
+  appShow(1, 'QR', `${BOX_ID} doğrulandı`, 'Kayapınar · Diclekent · 14 m uzaktasın');
+  addLog(`QR doğrulandı · kapak açıldı`, true);
+  // 3 — kapak
+  lockLed.material.color.setHex(0x3ddc84);
+  appShow(2, 'Kapak', 'Kapak açık', 'Atığı hazneye bırak.');
+  await tween(.75, k => { lidAngle = LID_OPEN * k; });
+  const P1 = item.position.clone(), P2 = new THREE.Vector3(0, FOOT + H + .35, 0), P3 = new THREE.Vector3(0, pileTop(kg / LIMIT) + .03, 0);
+  await tween(.75, k => { item.position.lerpVectors(P1, P2, k); item.position.y += Math.sin(k * Math.PI) * .25; item.rotation.x = k * 1.2; });
+  await tween(.45, k => item.position.lerpVectors(P2, P3, k), k => k * k);
+  scene.remove(item);
+  await tween(.6, k => { lidAngle = LID_OPEN * (1 - k); }, k => k * k);
+  lockLed.material.color.setHex(0xff5a3c);
+  // 4 — tart
+  const from = kg, to = Math.round((kg + it.kg) * 100) / 100, gain = it.kg * it.tl;
+  appShow(3, 'Tartı', 'Tartılıyor…', 'Yük hücresi okunuyor.');
+  await tween(.7, k => { const v = lerp(from, to, k); drawLCD(v, false); setPile(v / LIMIT); });
+  kg = to; earned += gain;
+  $('#rLast').textContent = fmt(it.kg, 2); $('#rLastS').textContent = `kg · ${it.ad.toLowerCase()}`;
+  updateReadout(); setLeds(kg / LIMIT);
+  appShow(3, 'Tartı', `+${fmt(it.kg, 2)} kg · ${tl(gain)}`, 'Tanıma ile ağırlık eşleşti. Kazanç hesabına geçti.');
+  // 5 — eşik
+  if (kg >= LIMIT && !full) {
+    full = true;
+    await wait(.6);
+    appShow(4, 'Bildirim', 'Kutu doldu, belediyeye haber verildi', 'En yakın boş kutu: AIB-DYB-0088 · 640 m');
+    drawLCD(kg, true); waveOn = 3.5;
+    toast('Belediyeye bildirim', `${BOX_ID} dolu (${fmt(kg)} kg). Boşaltma ekibi sıraya alındı.`);
+    addLog('Eşik aşıldı · belediyeye bildirim gönderildi', false);
+  }
+};
+const dropBtn = $('#dropBtn');
+dropBtn.onclick = async () => {
+  if (busy) return;
+  if (full) { toast('Kutu dolu', 'Bu kutu boşaltılmayı bekliyor. Önce "Kutuyu boşalt"a bas.'); return; }
+  busy = true; dropBtn.disabled = true;
+  try { await api.drop(sel); } finally { busy = false; dropBtn.disabled = false; }
+};
+$('#emptyBtn').onclick = async () => {
+  if (busy) return; busy = true;
+  appShow(4, 'Ekip', 'Belediye ekibi kutuyu boşaltıyor', 'Hazne sıfırlanıyor.');
+  lockLed.material.color.setHex(0x3ddc84);
+  await tween(.6, k => { lidAngle = LID_OPEN * k; });
+  const from = kg;
+  await tween(.9, k => { const v = lerp(from, 0, k); drawLCD(v, false); setPile(v / LIMIT); setLeds(v / LIMIT); });
+  await tween(.5, k => { lidAngle = LID_OPEN * (1 - k); });
+  lockLed.material.color.setHex(0xff5a3c);
+  kg = 0; full = false; updateReadout(); drawLCD(0, false); setLeds(0);
+  addLog('Belediye ekibi boşalttı · 0,0 kg', true);
+  toast('Boşaltıldı', `${BOX_ID} boşaltıldı. Kutu yeniden kullanıma açık.`, true);
+  appShow(0, 'Hazır', 'Kutu boş', 'Atık seç ve tara.');
+  busy = false;
+};
+
+/* güvenlik */
+const logEl = $('#log');
+function addLog(t, ok) {
+  const d = new Date(), hh = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+  const e = document.createElement('div'); if (ok) e.className = 'ok';
+  e.innerHTML = `<b>${hh}</b> · ${t}`; logEl.prepend(e);
+}
+let flashK = 0;
+$('#forceBtn').onclick = async () => {
+  if (busy) return; busy = true;
+  await tween(.9, k => { lidAngle = -Math.abs(Math.sin(k * Math.PI * 7)) * .03 * (1 - k); }, k => k);
+  lidAngle = 0; flashK = 1.4;
+  addLog('Yetkisiz açma denemesi · kapak kilitli kaldı · görüntü kaydedildi', false);
+  toast('Güvenlik uyarısı', `${BOX_ID}: QR'sız açma denemesi. Kamera kaydı belediyeye iletildi.`);
+  busy = false;
+};
+function toggleRain(on) { rainOn = on; rain.visible = on; $('#rainBtn').setAttribute('aria-pressed', on); $('#rainBtn').textContent = on ? 'Yağmuru durdur' : 'Yağmuru başlat'; }
+$('#rainBtn').onclick = () => toggleRain(!rainOn);
+
+/* teşvik */
+let rewardMode = 'p';
+function setReward(m) {
+  rewardMode = m;
+  $('#segP').setAttribute('aria-pressed', m === 'p'); $('#segK').setAttribute('aria-pressed', m === 'k');
+  $('#panP').classList.toggle('sel', m === 'p'); $('#panK').classList.toggle('sel', m === 'k');
+  $('#tarife').hidden = m !== 'p'; $('#sertifika').hidden = m !== 'k';
+  $('#rewardBtn').textContent = m === 'p' ? 'Kartı okut' : 'Sertifikayı göster';
+  card.visible = state === 'reward' && m === 'p'; cert.visible = state === 'reward' && m === 'k';
+}
+$('#segP').onclick = () => setReward('p'); $('#segK').onclick = () => setReward('k');
+const cardRest = new THREE.Vector3(.62, 1.02, .9);
+card.position.copy(cardRest); card.rotation.set(-.15, -.5, .1);
+$('#rewardBtn').onclick = async () => {
+  if (busy) return; busy = true;
+  if (rewardMode === 'p') {
+    const tgt = new THREE.Vector3(.2, FOOT + H - .43, D / 2 + .04);
+    const r0 = card.rotation.clone();
+    await tween(.7, k => { card.position.lerpVectors(cardRest, tgt, k); card.rotation.set(lerp(r0.x, 0, k), lerp(r0.y, 0, k), lerp(r0.z, 0, k)); });
+    nfcMat.emissive.setHex(0x1f7a4a);
+    await wait(.6);
+    nfcMat.emissive.setHex(0);
+    const pay = earned > 0 ? earned : 84;
+    toast('Ödeme', `${tl(pay)} kartına aktarıldı (•••• 4821).${earned > 0 ? '' : ' Örnek tutar.'}`, true);
+    await tween(.7, k => { card.position.lerpVectors(tgt, cardRest, k); card.rotation.set(lerp(0, r0.x, k), lerp(0, r0.y, k), lerp(0, r0.z, k)); });
+  } else {
+    await tween(1.1, k => { cert.position.y = .95 + Math.sin(k * Math.PI) * .12; cert.rotation.y = -.6 + k * Math.PI * 2; });
+    toast('Yeşil Sertifika · Kademe II', 'Örnek kurum: 2.340 kg. Harç indirimi ve iklim fonu önceliği tanımlandı.', true);
+  }
+  busy = false;
+};
+
+/* enerji */
+const hourEl = $('#hour');
+function energyAt(h) {
+  const day = clamp(Math.sin(Math.PI * (h - 6) / 14), 0, 1);
+  const ta = 16 + 13 * clamp(Math.sin(Math.PI * (h - 8) / 16), -0.3, 1);
+  const hot = ta + 26 * Math.pow(day, 1.2);
+  const cold = ta + 4 * day - (day === 0 ? 3 : 0);
+  const dT = Math.abs(hot - cold);
+  const p = 8 * Math.pow(.05 * dT, 2) / (4 * 2) * .65; // 8 modül, %35 kayıp
+  return { day, hot, cold, dT, p };
+}
+function cumJ(h) { let j = 0; for (let t = 5; t < h; t += .25) j += energyAt(t).p * 900; return j; }
+const CAP_J = 2 * .5 * 100 * 2.7 * 2.7;
+function updEnergy() {
+  const h = +hourEl.value, e = energyAt(h);
+  const hh = Math.floor(h), mm = Math.round((h - hh) * 60);
+  $('#hourV').textContent = `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
+  $('#tHot').textContent = Math.round(e.hot) + '°'; $('#tCold').textContent = Math.round(e.cold) + '°';
+  $('#pNow').textContent = fmt(e.p, 2);
+  const j = cumJ(h), cap = clamp((j * .6 + 260) / CAP_J, 0, 1);
+  $('#capV').textContent = '%' + Math.round(cap * 100); $('#capM').style.width = cap * 100 + '%';
+  const n = Math.floor(cap * CAP_J / .6);
+  $('#eNote').textContent = `Kapasitördeki enerji ≈ ${n.toLocaleString('tr-TR')} doluluk bildirimine yeter. Fark ${fmt(e.dT, 0)} °C.`;
+  pNowW = e.p;
+  if (renderer) {
+    heatU.uHeat.value = clamp((e.hot - 5) / 55, 0, 1);
+    const el = Math.max(.05, e.day), az = Math.PI * (h - 6) / 14;
+    sunTarget.set(Math.cos(az) * 6, 1 + el * 7, 3 + Math.sin(az) * 1.5);
+    heatU.uSun.value.copy(sunTarget).normalize();
+  }
+}
+const sunTarget = new THREE.Vector3(4, 7, 3);
+hourEl.addEventListener('input', updEnergy);
+updEnergy();
+
+/* pikap */
+let pickK = -1;
+$('#pickForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const names = [['pk1', 'buzdolabı'], ['pk2', 'çamaşır makinesi'], ['pk3', 'televizyon'], ['pk4', 'klima'], ['pk5', 'bilgisayar kasası']].filter(([id]) => $('#' + id).checked).map(x => x[1]);
+  const ok = $('#pkOk');
+  if (!names.length) { ok.hidden = false; ok.textContent = 'En az bir atık türü seç.'; return; }
+  ok.hidden = false;
+  ok.innerHTML = `<b>Talep oluşturuldu (örnek).</b> ${$('#pkDist').value} · ${$('#pkDay').value}. Pikap ${names.join(', ')} için yola çıkıyor. Talep no: PK-${Math.floor(1000 + Math.random() * 9000)}`;
+  pickK = 0;
+  if (state !== 'pickup') document.getElementById('pikap').scrollIntoView({ behavior: reduced ? 'auto' : 'smooth' });
+});
+$('#copyBtn').onclick = async () => {
+  try { await navigator.clipboard.writeText('153'); $('#copyBtn').textContent = 'Kopyalandı'; }
+  catch (e) { const r = document.createRange(); r.selectNodeContents(document.querySelector('.phone b')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); $('#copyBtn').textContent = 'Seçildi, kopyala'; }
+};
+
+/* ---------- boyut ---------- */
+function resize() {
+  const w = stage.clientWidth, h = stage.clientHeight;
+  renderer.setSize(w, h, false); camera.aspect = w / h;
+  camera.fov = w / h < .9 ? 46 : 36; camera.updateProjectionMatrix();
+}
+new ResizeObserver(resize).observe(stage); resize();
+
+/* ---------- döngü ---------- */
+const clock = new THREE.Clock();
+const tmpV = new THREE.Vector3(), tmpO = new THREE.Vector3();
+let truckT = 0;
+function pathAt(pts, t) {
+  let L = 0; const seg = [];
+  for (let i = 0; i < pts.length - 1; i++) { const l = pts[i].distanceTo(pts[i + 1]); seg.push(l); L += l; }
+  let d = t * L;
+  for (let i = 0; i < seg.length; i++) { if (d <= seg[i]) { const p = pts[i].clone().lerp(pts[i + 1], d / seg[i]); return { p, dir: pts[i + 1].clone().sub(pts[i]).normalize() }; } d -= seg[i]; }
+  return { p: pts[pts.length - 1].clone(), dir: pts[pts.length - 1].clone().sub(pts[pts.length - 2]).normalize() };
+}
+function frame() {
+  requestAnimationFrame(frame);
+  if (document.hidden) return;
+  const dt = Math.min(clock.getDelta(), .05), t = clock.elapsedTime;
+  for (let i = tweens.length - 1; i >= 0; i--) {
+    const w = tweens[i]; w.t += dt; const k = Math.min(1, w.t / w.d); w.fn(w.ez(k));
+    if (k >= 1) { tweens.splice(i, 1); w.r(); }
+  }
+  // kamera
+  const S = STATES[state], kc = 1 - Math.pow(.025, dt);
+  camPos.lerp(tmpV.set(...S.pos), kc); camTgt.lerp(tmpO.set(...S.tgt), kc);
+  fogNF[0] = lerp(fogNF[0], S.fog[0], kc); fogNF[1] = lerp(fogNF[1], S.fog[1], kc);
+  scene.fog.near = fogNF[0]; scene.fog.far = fogNF[1];
+  if (!dragging) { yawV *= .92; yaw += yawV; autoT += dt; if (!reduced && autoT > 4 && (state === 'hero' || state === 'explode')) yaw += dt * .06; }
+  const off = camPos.clone().sub(camTgt);
+  off.applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
+  const r = off.length(); const ph = Math.acos(off.y / r); const nph = clamp(ph - pitch, .15, 1.45);
+  const th = Math.atan2(off.x, off.z);
+  camera.position.set(camTgt.x + r * Math.sin(nph) * Math.sin(th), camTgt.y + r * Math.cos(nph), camTgt.z + r * Math.sin(nph) * Math.cos(th));
+  camera.lookAt(camTgt);
+
+  // patlatma
+  explodeK = lerp(explodeK, explodeTo, 1 - Math.pow(.02, dt));
+  const ek = ease(clamp(explodeK, 0, 1));
+  Object.values(parts).forEach(p => p.g.position.copy(p.base).addScaledVector(p.off, ek));
+  tegs.forEach(tg => { tg.position.x = tg.userData.s * (W / 2 + .007 + ek * .2); });
+  fins.forEach(f => { f.position.x = f.userData.s * ek * .42; });
+  // kapak
+  lidPivot.rotation.x = lidAngle - ek * .5;
+  // kamera konisi
+  coneK = lerp(coneK, coneTo, 1 - Math.pow(.03, dt));
+  flashK = Math.max(0, flashK - dt);
+  coneMat.opacity = coneK * .15 + (flashK > 0 ? .25 * Math.abs(Math.sin(flashK * 14)) : 0);
+  coneMat.color.setHex(flashK > 0 ? 0xff5a3c : 0x4cc38a);
+  camLed.material.color.setHex((flashK > 0 ? Math.sin(t * 30) > 0 : Math.sin(t * 2) > .6) ? 0xff3b30 : 0x441111);
+  // anten dalgaları
+  waveOn = Math.max(0, waveOn - dt);
+  waves.forEach(w => { w.t = (w.t + dt * .7) % 1; w.m.scale.setScalar(.3 + w.t * 2.2); w.m.material.opacity = waveOn > 0 ? (1 - w.t) * .9 : 0; });
+  antTip.material.color.setHex(waveOn > 0 && Math.sin(t * 16) > 0 ? 0xff5a3c : 0xffb02e);
+  if (full) { const on = Math.sin(t * 6) > 0; leds.forEach(l => l.material.color.setHex(on ? 0xff5a3c : 0x5a1a10)); }
+  // güneş
+  if (state === 'thermal') sun.position.lerp(sunTarget, kc); else sun.position.lerp(tmpV.set(4, 7, 3), kc);
+  heatK = lerp(heatK, heatTo, kc);
+  epMat.opacity = heatK * .95;
+  if (heatK > .01) {
+    const spd = .25 + pNowW * .9;
+    for (let i = 0; i < EP; i++) {
+      epT[i] = (epT[i] + dt * spd * (.6 + (i % 5) * .1)) % 1;
+      const s = i % 2 ? 1 : -1, k = epT[i], src = tegs[(i % 8)].position;
+      // TEG → arka alt → C1
+      const x = lerp(src.x, .1, k), y = lerp(src.y, FOOT + .75, k) + Math.sin(k * Math.PI) * .15, z = lerp(src.z, -D / 2 - .09, k);
+      epPos.set([x + s * 0, y, z], i * 3);
+    }
+    epGeo.attributes.position.needsUpdate = true;
+  }
+  // yağmur
+  if (rainOn) {
+    for (let i = 0; i < RN; i++) {
+      const o = i * 6; let x = rainPos[o], y = rainPos[o + 1], z = rainPos[o + 2];
+      y -= rainV[i] * dt;
+      const onLid = Math.abs(x) < W / 2 + .03 && Math.abs(z) < D / 2 + .05 && y < FOOT + H + .04 && y > FOOT + H - .2;
+      const floorHit = y < .01 || (Math.sqrt(x * x + z * z) < 1.2 && y < .065);
+      if (onLid || floorHit) {
+        const sp = splashes[splashI++ % splashes.length]; if (sp.t >= 1 || Math.random() < .3) { sp.m.position.set(x, (onLid ? FOOT + H + .04 : floorHit && Math.sqrt(x * x + z * z) < 1.2 ? .065 : .01), z); sp.t = 0; }
+        rDrop(i, true); continue;
+      }
+      rainPos[o + 1] = y; rainPos[o + 4] = y - .07;
+    }
+    rainGeo.attributes.position.needsUpdate = true;
+  }
+  splashes.forEach(s => { if (s.t < 1) { s.t += dt * 3; s.m.scale.setScalar(1 + s.t * 2); s.m.material.opacity = (1 - s.t) * .8; } else s.m.material.opacity = 0; });
+
+  // şehir
+  cityK = lerp(cityK, cityTo, 1 - Math.pow(.05, dt));
+  minis.forEach(({ m }) => { const p = m.userData.pillar; p.scale.y = Math.max(.01, cityK * m.userData.f * 3); p.position.y = 1.32 + p.scale.y / 2; });
+  const mf = kg / LIMIT; mainPillar.scale.y = Math.max(.01, cityK * mf * 3); mainPillar.position.y = FOOT + H + .25 + mainPillar.scale.y / 2;
+  mainPillarMat.color.setHex(mf >= 1 ? 0xff5a3c : mf >= .85 ? 0xffb02e : 0x3ddc84);
+  routeLine.material.opacity = cityK * .9;
+  city.visible = cityK > .02 || state === 'pickup'; mainPillar.visible = cityK > .02;
+  truck.visible = state === 'city' || state === 'pickup' || cityK > .02;
+  // kamyonet
+  truck.userData.beacon.material.color.setHex(Math.sin(t * 10) > 0 ? 0xffb02e : 0x6a4a10);
+  if (state === 'pickup' && pickK >= 0) {
+    pickK = Math.min(1, pickK + dt / (reduced ? 1.5 : 5));
+    const a = pathAt(routePick, ease(pickK)); truck.position.copy(a.p); truck.rotation.y = Math.atan2(a.dir.x, a.dir.z);
+  } else if (state === 'pickup') {
+    const a = pathAt(routePick, 0); truck.position.copy(a.p); truck.rotation.y = Math.atan2(a.dir.x, a.dir.z);
+  } else {
+    truckT = (truckT + dt * (cityTo ? .035 : .02)) % 1;
+    const a = pathAt(routeCity, truckT); truck.position.copy(a.p); truck.rotation.y = Math.atan2(a.dir.x, a.dir.z);
+  }
+
+  // etiketler
+  const showC = ek > .6 && state === 'explode';
+  const sw = stage.clientWidth, sh = stage.clientHeight;
+  PARTS.forEach((p, i) => {
+    const a = callAnchor[p.ref], el = callEls[i];
+    if (!showC || !a) { el.style.opacity = 0; return; }
+    a.getWorldPosition(tmpV); tmpV.project(camera);
+    const x = (tmpV.x * .5 + .5) * sw, y = (-tmpV.y * .5 + .5) * sh;
+    el.style.opacity = tmpV.z < 1 ? 1 : 0;
+    el.style.transform = `translate(${Math.round(x - 3)}px, ${Math.round(y - 9)}px)`;
+  });
+
+  renderer.render(scene, camera);
+}
+frame();
+const redraw = t => { const c = t.userData.canvas; t.userData.draw(c.getContext('2d'), c.width, c.height); t.needsUpdate = true; };
+if (document.fonts) document.fonts.ready.then(() => { [logoTex, idTex, certTex, nfcTex].forEach(redraw); drawLCD(kg, full); });
+}
+
+/* ---------- bölüm takibi ---------- */
+const secs = [...document.querySelectorAll('section[data-state]')];
+const tocA = [...document.querySelectorAll('nav.toc a')];
+function pickSection() {
+  const mid = innerWidth <= 1000 ? stage.getBoundingClientRect().bottom + (innerHeight - stage.getBoundingClientRect().bottom) * .35 : innerHeight * .45;
+  let cur = secs[0];
+  secs.forEach(s => { if (s.getBoundingClientRect().top <= mid) cur = s; });
+  tocA.forEach(a => a.classList.toggle('on', a.dataset.s === cur.id));
+  api.setState && api.setState(cur.dataset.state);
+}
+addEventListener('scroll', pickSection, { passive: true }); addEventListener('resize', pickSection);
+pickSection();
+if (location.hash && document.getElementById(location.hash.slice(1))) setTimeout(() => { document.getElementById(location.hash.slice(1)).scrollIntoView(); pickSection(); }, 50);
+updateReadout();
+})();
+</script>
+</body>
+</html>
